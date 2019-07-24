@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
+use pocketmine\entity\Skin;
 use pocketmine\event\Listener;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
@@ -59,4 +60,11 @@ class Main extends PluginBase implements Listener
 		$this->commandHandler->handleCommand($sender, $command, $args);
 		return true;
 	}
+
+	/**
+	 * Statically retrieve the skin/design for a vehicle.
+	 * @param string $name
+	 * @return Skin|null
+	 */
+	static function getSkin(string $name): ?Skin{}
 }

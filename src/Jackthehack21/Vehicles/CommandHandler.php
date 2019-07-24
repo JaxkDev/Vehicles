@@ -68,7 +68,7 @@ class CommandHandler
 				}
 
 				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3())){
-					$sender->sendMessage($this->plugin->prefix.C::RED."The type \"".$args[1]."\" does not exist.");
+					$sender->sendMessage($this->plugin->prefix.C::RED."The type \"".$args[0]."\" does not exist.");
 					return;
 				};
 		}
