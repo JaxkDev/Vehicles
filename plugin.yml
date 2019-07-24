@@ -1,0 +1,38 @@
+name: Vehicles
+author: Jackthehack21
+version: 0.0.1
+api: [3.9.0]
+mcpe-protocols: [361]
+main: Jackthehack21\Vehicles\Main
+website: "https://github.com/Jackthehack21/Vehicles"
+description: "[WIP] A PocketMine-MP plugin that brings vehicles to your server !"
+
+commands:
+  vehicles:
+    description: "Vehicles general command"
+    permission: vehicles.command.use
+    usage: /vehicles help
+    permission-message: "[Vehicles] > You do not have permission to use vehicle commands."
+
+permissions:
+  vehicles:
+    default: false
+    description: "Toggles all vehicle perms."
+    children:
+
+      vehicles.command:
+        description: "Toggles all vehicle commands."
+        default: false
+        children:
+
+          vehicles.command.use:
+            description: "Allows user to use commands."
+            default: true
+          vehicles.command.spawn:
+            description: "Allows user to spawn vehicles by command."
+            default: op
+
+
+      vehicles.spawn:
+        description: "Allows user to spawn vehicles."
+        default: op
