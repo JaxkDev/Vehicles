@@ -25,6 +25,9 @@ use Jackthehack21\Vehicles\Vehicle\VehicleFactory; //weirdest namespace ive ever
 
 class Main extends PluginBase implements Listener
 {
+
+	private static $instance;
+
 	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
 
 	/** @var CommandHandler */
@@ -33,8 +36,12 @@ class Main extends PluginBase implements Listener
 	/** @var VehicleFactory */
 	public $vehicleFactory;
 
+	/** @var String|Skin[] */
+	private $designs = [];
+
 	public function onLoad()
 	{
+		self::$instance = $this;
 		$this->getServer()->getLogger()->debug($this->prefix."Bringing back resources and any previous vehicles back from the dead...");
 		//resources here.
 		//Parse data to load previous vehicles.
@@ -43,14 +50,25 @@ class Main extends PluginBase implements Listener
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
 		$this->vehicleFactory = new VehicleFactory($this);
+
+		$this->saveResource("designs.json"); //TODO Save all designs in format design_VEHICLENAME.json to make custom skins easier.
+
+		if(file_exists($this->getDataFolder()."designs.json")){
+			$this->designs = json_decode(file_get_contents($this->getDataFolder()."designs.json"), true) ?? [];
+		}
+
+		foreach($this->designs as $name => $design){
+			$this->designs[$name] = new Skin($design["skinId"], base64_decode($design["skinData"]), base64_decode($design["capeData"]), $design["geometryName"], $design["geometryData"]);
+		}
+
+		$this->getServer()->getLogger()->debug($this->prefix."Resources now back to life !");
 	}
 
 	public function onEnable()
 	{
 		$this->getServer()->getLogger()->debug($this->prefix."Registering vehicles with the DVLA :)");
 
-		$this->vehicleFactory->loadTypes();
-		$this->vehicleFactory->registerVehicles();
+		$this->vehicleFactory->registerDefaultVehicles();
 
 		$this->getServer()->getLogger()->debug($this->prefix."That's all done now, remember no speeding ! <chuckles>");
 	}
@@ -62,9 +80,18 @@ class Main extends PluginBase implements Listener
 	}
 
 	/**
-	 * Statically retrieve the skin/design for a vehicle.
+	 * Retrieve the Design for a vehicle.
 	 * @param string $name
 	 * @return Skin|null
 	 */
-	static function getSkin(string $name): ?Skin{}
+	public function getDesign(string $name): ?Skin{
+		foreach($this->designs as $designName => $class){
+			if(strtolower($name) === strtolower($designName)) return $class;
+		}
+		return null;
+	}
+
+	public static function getInstance() : self{
+		return self::$instance;
+	}
 }

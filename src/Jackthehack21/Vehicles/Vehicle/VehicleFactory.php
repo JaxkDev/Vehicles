@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Vehicle;
 
+use ClassNotFoundException;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
@@ -24,7 +25,7 @@ class VehicleFactory
 	/** @var Main */
 	private $plugin;
 
-	/** @var string[] */
+	/** @var string[]|string[][] */
 	private $registeredTypes = [];
 
 	/**
@@ -51,23 +52,48 @@ class VehicleFactory
 	 */
 	public function isRegistered(string $type): bool
 	{
-		if(in_array(strtolower($type), array_map("strtolower", $this->getTypes()))) return true;
-		return false;
+		return ($this->findClass($type) === null ? false : true);
 	}
 
-	public function loadTypes(){
-		$this->registeredTypes[] = CarVehicle::getVehicleName();
+	/**
+	 * Searches the loaded types in hope of finding a match.
+	 * @param string $type
+	 * @return string|null
+	 */
+	public function findClass(string $type): ?string{
+		$new = array_map("strtolower", array_keys($this->getTypes()));
+		$index = array_search(strtolower($type), $new, true);
+		if($index >= 0) return $this->getTypes()[array_keys($this->getTypes())[$index]];
+		return null;
 	}
 
-	public function registerVehicles(){
-		Entity::registerEntity(CarVehicle::class, false, CarVehicle::getSaveNames());
+	public function registerDefaultVehicles(){
+		Entity::registerEntity(PoliceCar::class, false);
+		$this->registeredTypes[PoliceCar::getVehicleName()] = "PoliceCar";
+
+		//Todo others.
+	}
+
+	/**
+	 * Register the vehicle entity with the server.
+	 * @param Vehicle $vehicle
+	 */
+	public function registerVehicle(Vehicle $vehicle){
+		Entity::registerEntity(get_class($vehicle), false);
+		$this->registeredTypes[ $vehicle::getVehicleName()] = get_class($vehicle);
 	}
 
 	public function spawnVehicle(string $type, Level $level, Vector3 $pos): bool{
 		if(!$this->isRegistered($type)) return false;
 
+		$type = $this->findClass($type);
+		if($type === null){
+			throw new ClassNotFoundException("Vehicle type \"".$type."\" Has escaped our reaches and cant be found...");
+		}
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		$entity->spawnToAll();
+
+		$this->plugin->getLogger()->info($this->plugin->prefix."Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

@@ -63,14 +63,17 @@ class CommandHandler
 			case 'new':
 				if(count($args) === 0){
 					$sender->sendMessage($this->plugin->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->plugin->prefix.C::AQUA."Types: ".join(", ", $this->plugin->vehicleFactory->getTypes()));
+					$sender->sendMessage($this->plugin->prefix.C::AQUA."Types: ".join(", ", array_keys($this->plugin->vehicleFactory->getTypes())));
 					return;
 				}
 
+				/** @noinspection PhpUndefinedMethodInspection */
 				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3())){
 					$sender->sendMessage($this->plugin->prefix.C::RED."The type \"".$args[0]."\" does not exist.");
 					return;
 				};
+
+				$sender->sendMessage($this->plugin->prefix.C::GOLD."Vehicle type \"".$args[0]."\" spawned.");
 		}
 	}
 }

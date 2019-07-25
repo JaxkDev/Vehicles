@@ -14,11 +14,12 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Vehicle;
 
+use pocketmine\entity\EntityIds;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
 use pocketmine\entity\Entity;
-use pocketmine\entity\EntityIds;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\entity\Vehicle as PmVehicle;
 use pocketmine\utils\UUID;
@@ -28,9 +29,12 @@ abstract class Vehicle extends PmVehicle
 
 	public const NETWORK_ID = EntityIds::PLAYER;
 
-	protected $gravity = -1;
-	protected $drag = -1;
-	protected $rider = null;     //Todo once i have a skin, find accurate numbers.
+	protected $gravity = 0.1; //float down. todo change to harsher.
+	protected $drag = 0.5;
+
+	/** @var null|Player */
+	protected $rider = null;     //Todo once i have a skin, find accurate numbers for offsets etc.
+
 	protected $riderOffset = 0;
 	protected $baseOffset = 0;
 
@@ -59,16 +63,10 @@ abstract class Vehicle extends PmVehicle
 	abstract static function getVehicleName(): string;
 
 	/**
-	 * Return all the names that it can/is saved under
-	 * @return string[]
-	 */
-	abstract static function getSaveNames(): array;
-
-	/**
-	 * Returns the skin/design of the vehicle.
+	 * Returns the Design of the vehicle.
 	 * @return Skin
 	 */
-	abstract static function getSkin(): Skin;
+	abstract static function getDesign(): Skin;
 
 	public function isFireProof(): bool
 	{
