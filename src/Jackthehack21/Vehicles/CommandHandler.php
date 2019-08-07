@@ -63,17 +63,17 @@ class CommandHandler
 			case 'new':
 				if(count($args) === 0){
 					$sender->sendMessage($this->plugin->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->plugin->prefix.C::AQUA."Types: ".join(", ", array_keys($this->plugin->vehicleFactory->getTypes())));
+					$sender->sendMessage($this->plugin->prefix.C::AQUA."Vehicle Types: [".join(", ", array_keys($this->plugin->vehicleFactory->getTypes()))."],  Object Types: [".join(", ", array_keys($this->plugin->objectFactory->getTypes()))."]");
 					return;
 				}
 
 				/** @noinspection PhpUndefinedMethodInspection */
-				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3())){
-					$sender->sendMessage($this->plugin->prefix.C::RED."The type \"".$args[0]."\" does not exist.");
+				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3()) and !$this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3())){
+					$sender->sendMessage($this->plugin->prefix.C::RED."\"".$args[0]."\" does not exist.");
 					return;
 				};
 
-				$sender->sendMessage($this->plugin->prefix.C::GOLD."Vehicle type \"".$args[0]."\" spawned.");
+				$sender->sendMessage($this->plugin->prefix.C::GOLD."\"".$args[0]."\" spawned.");
 		}
 	}
 }

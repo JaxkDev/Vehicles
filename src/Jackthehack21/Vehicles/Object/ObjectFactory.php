@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles\Vehicle;
+namespace Jackthehack21\Vehicles\Object;
 
 use ClassNotFoundException;
 use pocketmine\level\Level;
@@ -20,7 +20,7 @@ use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use Jackthehack21\Vehicles\Main;
 
-class VehicleFactory
+class ObjectFactory
 {
 	/** @var Main */
 	private $plugin;
@@ -67,30 +67,34 @@ class VehicleFactory
 		return null;
 	}
 
-	public function registerDefaultVehicles(){
+	public function registerDefaultObjects(){
+		Entity::registerEntity(TrafficConeSmall::class, false);
+		$this->registeredTypes[TrafficConeSmall::getName()] = "TrafficConeSmall";
+
 		//Todo others.
 	}
 
 	/**
 	 * Register the vehicle entity with the server.
-	 * @param Vehicle $vehicle
+	 * @param DisplayObject $object
 	 */
-	public function registerVehicle(Vehicle $vehicle){
-		Entity::registerEntity(get_class($vehicle), false);
-		$this->registeredTypes[ $vehicle::getName()] = get_class($vehicle);
+	public function registerObject(DisplayObject $object){
+		Entity::registerEntity(get_class($object), false);
+		$this->registeredTypes[$object::getName()] = get_class($object);
 	}
 
-	public function spawnVehicle(string $type, Level $level, Vector3 $pos): bool{
+	public function spawnObject(string $type, Level $level, Vector3 $pos): bool{
 		if(!$this->isRegistered($type)) return false;
 
 		$type = $this->findClass($type);
 		if($type === null){
-			throw new ClassNotFoundException("Vehicle type \"".$type."\" Has escaped our reaches and cant be found...");
+			throw new ClassNotFoundException("Object \"".$type."\" Has escaped our reaches and cannot be found...");
 		}
+
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->info($this->plugin->prefix."Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getServer()->getLogger()->info($this->plugin->prefix."Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

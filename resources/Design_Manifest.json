@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Traffic-Cone-Small",
+    "designId": "97c95d16-1314-4da6-ab52-db97944a4490",
+    "designFile": "TrafficConeSmall.png",
+    "geometryName": "geometry.TrafficConeSmall",
+    "geometryFile": "TrafficConeSmall_Geometry.json"
+  }
+]

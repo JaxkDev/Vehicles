@@ -12,30 +12,20 @@
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles\Vehicle;
+namespace Jackthehack21\Vehicles\Object;
 
+use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
-use pocketmine\entity\Entity;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
-use pocketmine\utils\TextFormat as C;
-use pocketmine\entity\Vehicle as PmVehicle;
 use pocketmine\utils\UUID;
 
-abstract class Vehicle extends PmVehicle
-{
+abstract class DisplayObject extends Entity{
 	public const NETWORK_ID = EntityIds::PLAYER;
 
-	protected $gravity = 0.1; //float down. todo change to harsher. (remember not to make negative...)
-	protected $drag = 0.5;
-
-	/** @var null|Player */
-	protected $rider = null;     //Todo once i have a skin, find accurate numbers for offsets etc.
-
-	protected $riderOffset = 0;
-	protected $baseOffset = 0;
+	/** @var int */
+	protected $gravity = 5; //todo find.
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
@@ -47,22 +37,19 @@ abstract class Vehicle extends PmVehicle
 	 */
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->uuid = UUID::fromRandom();
-
 		parent::__construct($level, $nbt);
-
-		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
-		$this->setNameTagAlwaysVisible(true);
-		$this->setCanSaveWithChunk(false); //Separated in the future as saving will be optional. (maybe will end up saving with chunks)
+		$this->setNameTagAlwaysVisible(false);
+		$this->setCanSaveWithChunk(true); //Separated in the future as saving will be optional. (maybe will end up saving with chunks)
 	}
 
 	/**
-	 * Should return the vehicle name shown in-game.
+	 * Should return the type of vehicle it is, eg Car, Plane, Boat (MUST BE UNIQUE !)
 	 * @return string
 	 */
 	abstract static function getName(): string;
 
 	/**
-	 * Returns the Design of the vehicle.
+	 * Returns the Design of the object.
 	 * @return Skin
 	 */
 	abstract static function getDesign(): Skin;
@@ -70,11 +57,5 @@ abstract class Vehicle extends PmVehicle
 	public function isFireProof(): bool
 	{
 		return true;
-	}
-
-	protected function initEntity(): void
-	{
-		parent::initEntity();
-		$this->propertyManager->setString(Entity::DATA_INTERACTIVE_TAG, "Ride");
 	}
 }
