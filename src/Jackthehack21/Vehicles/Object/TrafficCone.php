@@ -27,32 +27,23 @@ use pocketmine\utils\UUID;
 use pocketmine\Player;
 use TypeError;
 
-class TrafficConeSmall extends DisplayObject{
+class TrafficCone extends DisplayObject{
 	public const NETWORK_ID = EntityIds::PLAYER;
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
 
-	public $width = 0.4; //Todo measure.
-	public $height = 0.4;
+	public $width = 0.6; //rough, probably no where near.
+	public $height = 1;
+
+	protected $baseOffset = 1.5;
 
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
 		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
 		$this->setNameTagAlwaysVisible(false);
-		$this->setCanSaveWithChunk(true);
-	}
-
-	public function onCollideWithPlayer(Player $player) : void{
-		var_dump($player->getPosition());
-		if($player->asLocation()->distance($this->getPosition()) < 1){
-			$player->resetLastMovements(); //big todo
-		}
-	}
-
-	public function canBeCollidedWith() : bool{
-		return true;
+		$this->setCanSaveWithChunk(false); //While testing.
 	}
 
 	public function canBeMovedByCurrents() : bool{
@@ -60,12 +51,12 @@ class TrafficConeSmall extends DisplayObject{
 	}
 
 	static function getName(): string{
-		return "Traffic-Cone-Small";
+		return "Traffic-Cone";
 	}
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->getDesign(TrafficConeSmall::getName());
+		return Main::getInstance()->getDesign(TrafficCone::getName());
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

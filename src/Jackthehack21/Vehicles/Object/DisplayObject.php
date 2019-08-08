@@ -25,7 +25,7 @@ abstract class DisplayObject extends Entity{
 	public const NETWORK_ID = EntityIds::PLAYER;
 
 	/** @var int */
-	protected $gravity = 5; //todo find.
+	protected $gravity = 1; //todo find. (remember not to put negative.......)
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;

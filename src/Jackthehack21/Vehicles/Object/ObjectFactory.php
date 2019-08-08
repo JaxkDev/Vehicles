@@ -68,8 +68,9 @@ class ObjectFactory
 	}
 
 	public function registerDefaultObjects(){
-		Entity::registerEntity(TrafficConeSmall::class, false);
-		$this->registeredTypes[TrafficConeSmall::getName()] = "TrafficConeSmall";
+		Entity::registerEntity(TrafficCone::class, false);
+		$this->registeredTypes[TrafficCone::getName()] = "TrafficCone";
+		$this->plugin->getServer()->getLogger()->debug($this->plugin->prefix."Registered Object 'TrafficCone'");
 
 		//Todo others.
 	}

@@ -5,7 +5,7 @@ api: [3.9.0]
 mcpe-protocols: [361]
 main: Jackthehack21\Vehicles\Main
 website: "https://github.com/Jackthehack21/Vehicles"
-description: "[WIP] A PocketMine-MP plugin that brings vehicles to your server !"
+description: "[WIP] A PocketMine-MP plugin that brings vehicles and other road objects to your server !"
 
 commands:
   vehicles:

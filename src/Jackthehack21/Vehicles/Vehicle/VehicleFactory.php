@@ -68,6 +68,7 @@ class VehicleFactory
 	}
 
 	public function registerDefaultVehicles(){
+		//$this->plugin->getServer()->getLogger()->debug($this->plugin->prefix."Registered Vehicle 'VehicleNameHere'");
 		//Todo others.
 	}
 

@@ -15,13 +15,16 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles;
 
 use Exception;
-use Jackthehack21\Vehicles\Object\ObjectFactory;
 use pocketmine\entity\Skin;
 use pocketmine\event\Listener;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
+use Jackthehack21\Vehicles\Vehicle\Vehicle;
+use Jackthehack21\Vehicles\Object\DisplayObject;
+use Jackthehack21\Vehicles\Object\ObjectFactory;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 use Jackthehack21\Vehicles\Vehicle\VehicleFactory; //weirdest namespace ive ever used (3x vehicles *lmao*).
 
@@ -47,7 +50,7 @@ class Main extends PluginBase implements Listener
 	public function onLoad()
 	{
 		self::$instance = $this;
-		$this->getServer()->getLogger()->debug($this->prefix."Bringing back resources and any previous things back from the dead...");
+		$this->getServer()->getLogger()->debug($this->prefix."Loading all resources...");
 		//resources here.
 		//Parse data to load previous vehicles.
 		//Prep all objects. (spawn onEnable)
@@ -57,30 +60,37 @@ class Main extends PluginBase implements Listener
 		$this->vehicleFactory = new VehicleFactory($this);
 		$this->objectFactory = new ObjectFactory($this);
 
-		$this->saveResource("Design_Manifest.json");
+		$this->saveResource("Designs/Design_Manifest.json");
 		//TODO CACHE AND ITS OWN HANDLER.
-		if(file_exists($this->getDataFolder()."Design_Manifest.json")){
-			$designManifest = json_decode(file_get_contents($this->getDataFolder()."Design_Manifest.json"), true) ?? [];
+		if(file_exists($this->getDataFolder()."Designs/Design_Manifest.json")){
+			$designManifest = json_decode(file_get_contents($this->getDataFolder()."Designs/Design_Manifest.json"), true) ?? [];
 			foreach($designManifest as $design){
-				$this->saveResource($design["designFile"]);
-				$this->saveResource($design["geometryFile"]);
-				if(file_exists($this->getDataFolder().$design["designFile"])){
-					$design["designData"] = $this->readDesignFile($this->getDataFolder().$design["designFile"]);
+				$this->saveResource("Designs/".$design["designFile"]);
+				$this->saveResource("Designs/".$design["geometryFile"]);
+				if(file_exists($this->getDataFolder()."Designs/".$design["designFile"])){
+					$design["designData"] = $this->readDesignFile($this->getDataFolder()."Designs/".$design["designFile"]);
 				} else {
 					throw new Exception("File '".$design["designFile"]."' does not exist.");
 				}
-				if(file_exists($this->getDataFolder().$design["geometryFile"])){
-					$design["geometryData"] = json_decode(file_get_contents($this->getDataFolder().$design["geometryFile"]));
+				if(file_exists($this->getDataFolder()."Designs/".$design["geometryFile"])){
+					$design["geometryData"] = json_decode(file_get_contents($this->getDataFolder()."Designs/".$design["geometryFile"]));
 				} else {
 					throw new Exception("File '".$design["geometryFile"]."' does not exist.");
 				}
 				$this->designs[$design["name"]] = new Skin($design["designId"],$design["designData"],"",$design["geometryName"],json_encode($design["geometryData"]));
 				$this->designs[$design["name"]]->validate();
-				if($this->designs[$design["name"]]->isValid()) $this->getLogger()->info("Registered '".$design["name"]."'");
-				else $this->getLogger()->info($this->prefix."'".$design["name"]."' has not got valid data.");
+				if($this->designs[$design["name"]]->isValid()) $this->getServer()->getLogger()->debug($this->prefix."Loaded '".$design["name"]."'");
+				else $this->getServer()->getLogger()->warning($this->prefix."'".$design["name"]."' has not got valid data.");
 			}
 		}
-		$this->getServer()->getLogger()->debug($this->prefix."Resources now back to life !");
+		$this->getServer()->getLogger()->debug($this->prefix."Resources now loaded !");
+	}
+
+	public function onInteract(EntityDamageByEntityEvent $event){
+		if($event->getEntity() instanceof DisplayObject or $event->getEntity() instanceof Vehicle){
+			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
+			//todo sub commands like /vehicles remove
+		}
 	}
 
 	public function onEnable()
@@ -92,6 +102,8 @@ class Main extends PluginBase implements Listener
 		$this->getServer()->getLogger()->debug($this->prefix."Registering vehicles with the DVLA :)");
 		$this->vehicleFactory->registerDefaultVehicles();
 		$this->getServer()->getLogger()->debug($this->prefix."That's all done now, remember no speeding ! *chuckles*");
+
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
@@ -113,7 +125,7 @@ class Main extends PluginBase implements Listener
 	}
 
 	/**
-	 * Return the RGBA Byte array ready for use from a UV Map (png)
+	 * Return the RGBA Byte array in string format ready for use by skin (from a UV Map (png))
 	 * @param string $path
 	 * @return string|null
 	 */

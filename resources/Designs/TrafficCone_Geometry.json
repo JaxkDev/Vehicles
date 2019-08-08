@@ -1,5 +1,5 @@
 {
-	"geometry.TrafficConeSmall": {
+	"geometry.TrafficCone": {
 		"texturewidth": 64,
 		"textureheight": 64,
 		"visible_bounds_width": 2,
