@@ -70,9 +70,16 @@ class ObjectFactory
 	public function registerDefaultObjects(){
 		Entity::registerEntity(TrafficCone::class, false);
 		$this->registeredTypes[TrafficCone::getName()] = "TrafficCone";
-		$this->plugin->getServer()->getLogger()->debug($this->plugin->prefix."Registered Object 'TrafficCone'");
+		Entity::registerEntity(StopSign::class, false);
+		$this->registeredTypes[StopSign::getName()] = "StopSign";
+		Entity::registerEntity(NoEntrySign::class, false);
+		$this->registeredTypes[NoEntrySign::getName()] = "NoEntrySign";
 
-		//Todo others.
+		//others here
+
+		foreach(array_keys($this->registeredTypes) as $name){
+			$this->plugin->getLogger()->debug("Registered Object '${name}'");
+		}
 	}
 
 	/**
@@ -82,6 +89,8 @@ class ObjectFactory
 	public function registerObject(DisplayObject $object){
 		Entity::registerEntity(get_class($object), false);
 		$this->registeredTypes[$object::getName()] = get_class($object);
+
+		$this->plugin->getLogger()->debug("Registered Object '".$object::getName()."'");
 	}
 
 	public function spawnObject(string $type, Level $level, Vector3 $pos): bool{
@@ -95,7 +104,7 @@ class ObjectFactory
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		$entity->spawnToAll();
 
-		$this->plugin->getServer()->getLogger()->info($this->plugin->prefix."Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->info("Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

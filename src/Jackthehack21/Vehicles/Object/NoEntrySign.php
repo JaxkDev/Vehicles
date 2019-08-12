@@ -26,7 +26,7 @@ use pocketmine\utils\UUID;
 use pocketmine\Player;
 use TypeError;
 
-class TrafficCone extends DisplayObject{
+class NoEntrySign extends DisplayObject{
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
 
@@ -41,19 +41,17 @@ class TrafficCone extends DisplayObject{
 		parent::__construct($level, $nbt);
 		$this->setNameTagAlwaysVisible(false);
 		$this->setCanSaveWithChunk(true);
-	}
 
-	public function canBeMovedByCurrents() : bool{
-		return true;
+		$this->setScale(0.26);
 	}
 
 	static function getName(): string{
-		return "Traffic-Cone";
+		return "No-Entry-Sign";
 	}
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->designFactory->getDesign("Traffic-Cone");
+		return Main::getInstance()->designFactory->getDesign("No-Entry-Sign");
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

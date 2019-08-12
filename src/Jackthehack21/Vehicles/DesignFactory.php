@@ -14,16 +14,56 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
+use Exception;
+use InvalidArgumentException;
 use pocketmine\entity\Skin;
 
 class DesignFactory{
 
+	private static $instance;
+
 	/** @var Main */
 	private $plugin;
 
+	/** @var String|Skin[] */
+	private $designs = [];
+
 	public function __construct(Main $plugin)
 	{
+		self::$instance = $this;
 		$this->plugin = $plugin;
+	}
+	
+	public function loadAll(): void{
+		$this->plugin->saveResource("Designs/Design_Manifest.json",true);
+		if(file_exists($this->plugin->getDataFolder()."Designs/Design_Manifest.json")){
+			$designManifest = json_decode(file_get_contents($this->plugin->getDataFolder()."Designs/Design_Manifest.json"), true) ?? [];
+			foreach($designManifest as $design){
+				$this->plugin->saveResource("Designs/".$design["designFile"], true);
+				$this->plugin->saveResource("Designs/".$design["geometryFile"], true);
+				if(file_exists($this->plugin->getDataFolder()."Designs/".$design["designFile"])){
+					$design["designData"] = $this->readDesignFile($this->plugin->getDataFolder()."Designs/".$design["designFile"]);
+				} else {
+					//todo
+					throw new Exception("File '".$design["designFile"]."' does not exist.");
+				}
+				if(file_exists($this->plugin->getDataFolder()."Designs/".$design["geometryFile"])){
+					$design["geometryData"] = json_decode(file_get_contents($this->plugin->getDataFolder()."Designs/".$design["geometryFile"]));
+				} else {
+					//todo
+					throw new Exception("File '".$design["geometryFile"]."' does not exist.");
+				}
+				$this->designs[$design["name"]] = new Skin($design["designId"],$design["designData"],"",$design["geometryName"],json_encode($design["geometryData"]));
+				try{
+					$this->designs[$design["name"]]->validate();
+				} catch (InvalidArgumentException $e){
+					unset($this->designs[$design["name"]]);
+					$this->plugin->getLogger()->warning("'".$design["name"]."' has not got valid data, and so it has been disabled.");
+					continue;
+				}
+				$this->plugin->getLogger()->debug("Loaded '".$design["name"]."'");
+			}
+		}
 	}
 
 	/**
@@ -44,21 +84,35 @@ class DesignFactory{
 	 * @return string|null
 	 */
 	public function readDesignFile(string $path): ?string{
+		if(!extension_loaded("gd")) {
+			$this->plugin->getLogger()->error("GD library is not enabled!");
+			return null;
+		}
 		$img = @imagecreatefrompng($path);
 		$bytes = '';
-		$l = (int) @getimagesize($path)[1];
-		for ($y = 0; $y < $l; $y++) {
-			for ($x = 0; $x < 64; $x++) {
+		for ($y = 0; $y < imagesy($img); $y++) {
+			for ($x = 0; $x < imagesx($img); $x++) {
 				$rgba = @imagecolorat($img, $x, $y);
-				$a = ((~((int)($rgba >> 24))) << 1) & 0xff;
-				$r = ($rgba >> 16) & 0xff;
-				$g = ($rgba >> 8) & 0xff;
-				$b = $rgba & 0xff;
-				$bytes .= chr($r) . chr($g) . chr($b) . chr($a);
+				$a = chr(((~((int)($rgba >> 24))) << 1) & 0xff);
+				$r = chr(($rgba >> 16) & 0xff);
+				$g = chr(($rgba >> 8) & 0xff);
+				$b = chr($rgba & 0xff);
+				$bytes .= $r.$g.$b.$a;
 			}
 		}
 		@imagedestroy($img);
-		return $bytes;
+		return $bytes;/*
+		$combine = [];
+		for ($y = 0; $y < imagesy($img); $y++){
+			for ($x = 0; $x < imagesx($img); $x++){
+				$color = imagecolorsforindex($img, imagecolorat($img, $x, $y));
+				//TODO fix uneven alpha - if even possible..
+				$color['alpha'] = (($color['alpha'] << 1) ^ 0xff) - 1; // back = (($alpha << 1) ^ 0xff) - 1
+				$combine[] = sprintf("%02x%02x%02x%02x", $color['red'], $color['green'], $color['blue'], $color['alpha']??0);
+			}
+		}
+		$data = hex2bin(implode('', $combine));
+		return $data;*/
 	}
 
 	public static function getInstance() : self{

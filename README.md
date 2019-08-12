@@ -6,8 +6,13 @@ _Vehicles adds the following things:_
 - None
 
 #### Available Objects:
-- Traffic-Cone-Small
+- Traffic-Cone
+- No-Entry-Sign
+- Stop-Sign
 
+
+# NOTICE !
+This is a experimental plugin and is not for performance and probably not the best way to do such plugin but this is great experience for myself.
 
 # License:
-*ALL* Resources and code provided is licensed under the Open Software License ("OSL") v. 3.0
+*ALL* Resources (Including models used) and code provided is licensed under the Open Software License ("OSL") v. 3.0

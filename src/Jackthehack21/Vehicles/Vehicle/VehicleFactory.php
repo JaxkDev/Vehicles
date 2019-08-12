@@ -68,7 +68,7 @@ class VehicleFactory
 	}
 
 	public function registerDefaultVehicles(){
-		//$this->plugin->getServer()->getLogger()->debug($this->plugin->prefix."Registered Vehicle 'VehicleNameHere'");
+		//$this->plugin->getLogger()->debug("Registered Vehicle 'VehicleNameHere'");
 		//Todo others.
 	}
 
@@ -78,7 +78,8 @@ class VehicleFactory
 	 */
 	public function registerVehicle(Vehicle $vehicle){
 		Entity::registerEntity(get_class($vehicle), false);
-		$this->registeredTypes[ $vehicle::getName()] = get_class($vehicle);
+		$this->registeredTypes[$vehicle::getName()] = get_class($vehicle);
+		$this->plugin->getLogger()->debug("Registered Vehicle '".$vehicle::getName()."'");
 	}
 
 	public function spawnVehicle(string $type, Level $level, Vector3 $pos): bool{
@@ -91,7 +92,7 @@ class VehicleFactory
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->info($this->plugin->prefix."Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->info("Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

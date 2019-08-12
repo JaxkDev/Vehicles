@@ -3,7 +3,21 @@
     "name": "Traffic-Cone",
     "designId": "97c95d16-1314-4da6-ab52-db97944a4490",
     "designFile": "TrafficCone.png",
-    "geometryName": "geometry.TrafficCone",
+    "geometryName": "geometry.TrafficCone.1",
     "geometryFile": "TrafficCone_Geometry.json"
+  },
+  {
+    "name": "Stop-Sign",
+    "designId": "c5324ac2-032b-405e-b49d-0d38b5728ec1",
+    "designFile": "StopSign.png",
+    "geometryName": "geometry.StopSign.11",
+    "geometryFile": "StopSign_Geometry.json"
+  },
+  {
+    "name": "No-Entry-Sign",
+    "designId": "3285fb91-0e21-473f-b682-778a140be4b2",
+    "designFile": "NoEntrySign.png",
+    "geometryName": "geometry.NoEntrySign.1",
+    "geometryFile": "NoEntrySign_Geometry.json"
   }
 ]
