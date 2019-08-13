@@ -24,7 +24,7 @@ use pocketmine\Player;
 
 class StopSign extends DisplayObject{
 	public $width = 0.6; //rough, probably no where near.
-	public $height = 1;
+	public $height = 3;
 
 	protected $baseOffset = 1.615;
 

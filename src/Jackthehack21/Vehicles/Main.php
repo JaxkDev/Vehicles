@@ -14,29 +14,29 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
-use pocketmine\Player;
 use pocketmine\utils\Config;
-use pocketmine\event\Listener;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
 
-use Jackthehack21\Vehicles\Vehicle\Vehicle; //weirdest namespace ive ever used (3x vehicles *lmao*).
-use Jackthehack21\Vehicles\Object\DisplayObject;
 use Jackthehack21\Vehicles\Object\ObjectFactory;
 use Jackthehack21\Vehicles\Vehicle\VehicleFactory;
 
-class Main extends PluginBase implements Listener
+class Main extends PluginBase
 {
 
 	private static $instance;
+
+	public static $driving = [];
 
 	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
 
 	/** @var CommandHandler */
 	private $commandHandler;
+
+	/** @var EventHandler */
+	private $eventHandler;
 
 	/** @var VehicleFactory */
 	public $vehicleFactory;
@@ -69,39 +69,16 @@ class Main extends PluginBase implements Listener
 		$this->vehicleFactory = new VehicleFactory($this);
 		$this->objectFactory = new ObjectFactory($this);
 		$this->designFactory = new DesignFactory($this);
+		$this->eventHandler = new EventHandler($this);
 
 		//Load any that need to be loaded.
 		$this->designFactory->loadAll();
 
 		$this->cfgObject = $this->getConfig();
 		$this->cfg = $this->cfgObject->getAll();
-		$this->getLogger()->debug("Loaded config v".$this->cfg["version"]);
+		$this->getLogger()->debug("Loaded Config file, Version: {$this->cfg["version"]}");
 
 		$this->getLogger()->debug("Resources now loaded !");
-	}
-
-	public function onInteract(EntityDamageByEntityEvent $event){
-		if($event->getEntity() instanceof DisplayObject or $event->getEntity() instanceof Vehicle){
-			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
-			if(!($event->getDamager() instanceof Player)) return;
-			/** @noinspection PhpUndefinedMethodInspection */
-			if(($index = array_search(strtolower($event->getDamager()->getName()),array_keys($this->interactCommands))) !== false){
-				$command = $this->interactCommands[array_keys($this->interactCommands)[$index]][0];
-				$args = $this->interactCommands[array_keys($this->interactCommands)[$index]][1];
-				$attacker = $event->getDamager();
-				switch($command){
-					case 'remove':
-						$event->getEntity()->close();
-						/** @noinspection PhpUndefinedMethodInspection */
-						$attacker->sendMessage($this->prefix."'".$event->getEntity()->getName()."' has been removed.");
-						/** @noinspection PhpUndefinedMethodInspection */
-						unset($this->interactCommands[strtolower($attacker->getName())]);
-						break;
-					default:
-						$this->getLogger()->warning("Unknown interact command '{$command}'");
-				}
-			}
-		}
 	}
 
 	public function onEnable()
@@ -114,7 +91,7 @@ class Main extends PluginBase implements Listener
 		$this->vehicleFactory->registerDefaultVehicles();
 		$this->getLogger()->debug("That's all done now.");
 
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool

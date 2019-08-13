@@ -22,7 +22,7 @@ use pocketmine\utils\UUID;
 use pocketmine\Player;
 
 class TestCar extends Vehicle {
-	public $width = 5; //rough, probably no where near.
+	public $width = 3; //rough, probably no where near.
 	public $height = 2;
 
 	protected $baseOffset = 1.615;
@@ -31,8 +31,18 @@ class TestCar extends Vehicle {
 	{
 		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
-		$this->setNameTagAlwaysVisible(false);
+		$this->setNameTagAlwaysVisible(true);
 		$this->setCanSaveWithChunk(true);
+
+		$this->setScale(0.85);
+
+		//driver - [ 1.57, 0.5, -1 ]
+	}
+
+	public function recalculateBoundingBox(): void
+	{
+		//todo....
+		parent::recalculateBoundingBox();
 	}
 
 	static function getName(): string{
@@ -46,5 +56,26 @@ class TestCar extends Vehicle {
 
 	protected function sendSpawnPacket(Player $player) : void{
 		parent::sendInitPacket($player, $this);
+	}
+
+	/**
+	 * Handle player input.
+	 * @param float $x
+	 * @param float $y
+	 */
+	function updateMotion(float $x, float $y): void
+	{
+		if($x > 0 or $x < 0){
+			$this->yaw = $this->driver->getYaw();
+		}
+
+		if($y > 0){
+			$this->motion = $this->getDirectionVector()->multiply($y);
+			$this->yaw = $this->driver->getYaw();
+		} elseif ($y < 0){
+			$this->motion = $this->getDirectionVector()->multiply($y);
+			//$this->yaw = 0-$this->driver->getYaw();
+		}
+
 	}
 }

@@ -14,9 +14,11 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
+use pocketmine\Player;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+
 use pocketmine\utils\TextFormat as C;
 
 class CommandHandler
@@ -36,17 +38,13 @@ class CommandHandler
 	/**
 	 * @internal Used directly from pmmp, no other plugins should be passing commands here (if really needed, dispatch command from server).
 	 *
-	 * @param CommandSender $sender
+	 * @param CommandSender|Player $sender
 	 * @param Command $command
 	 * @param array $args
 	 */
 	function handleCommand(CommandSender $sender, Command $command, array $args): void{
 		if($sender instanceof ConsoleCommandSender){
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
-			return;
-		}
-		if(!$sender->hasPermission("vehicles.command.use")){
-			$sender->sendMessage($this->prefix.C::RED."You do not have permission to use vehicle commands.");
 			return;
 		}
 		if(strtolower($command->getName()) !== "vehicles"){
@@ -73,7 +71,6 @@ class CommandHandler
 					$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())).C::AQUA."\nObject Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
 					return;
 				}
-				/** @noinspection PhpUndefinedMethodInspection */
 				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3()) and !$this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3())){
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");
 					return;

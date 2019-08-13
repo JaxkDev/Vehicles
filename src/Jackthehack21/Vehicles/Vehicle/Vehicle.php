@@ -14,32 +14,33 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Vehicle;
 
-use pocketmine\entity\EntityIds;
-use pocketmine\entity\Skin;
-use pocketmine\item\Item;
-use pocketmine\level\Level;
-use pocketmine\entity\Entity;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\AddPlayerPacket;
-use pocketmine\network\mcpe\protocol\PlayerListPacket;
-use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
+use Jackthehack21\Vehicles\Main;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat as C;
-use pocketmine\entity\Vehicle as PmVehicle;
+use pocketmine\item\Item;
 use pocketmine\utils\UUID;
+use pocketmine\level\Level;
+use pocketmine\entity\Skin;
+use pocketmine\entity\Entity;
+use pocketmine\entity\Rideable;
+use pocketmine\entity\EntityIds;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\utils\TextFormat as C;
+use pocketmine\network\mcpe\protocol\AddPlayerPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
+use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 
-abstract class Vehicle extends PmVehicle
+abstract class Vehicle extends Entity implements Rideable
 {
-	public const NETWORK_ID = EntityIds::PLAYER;
+	public const NETWORK_ID = EntityIds::HORSE;
 
-	protected $gravity = 0.1; //float down. todo change to harsher. (remember not to make negative...)
+	protected $gravity = 1; //todo find best value. (remember not to make negative...)
 	protected $drag = 0.5;
 
 	/** @var null|Player */
-	protected $rider = null;     //Todo once i have a skin, find accurate numbers for offsets etc.
-
-	protected $riderOffset = 0;
-	protected $baseOffset = 0;
+	protected $driver;
+	protected $driverOffset = 0;
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
@@ -56,7 +57,9 @@ abstract class Vehicle extends PmVehicle
 
 		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
 		$this->setNameTagAlwaysVisible(true);
-		$this->setCanSaveWithChunk(false); //Separated in the future as saving will be optional. (maybe will end up saving with chunks)
+		$this->setCanSaveWithChunk(true);
+
+		$this->propertyManager->setString(Entity::DATA_INTERACTIVE_TAG, "Drive"); //Doesnt work ?
 	}
 
 	/**
@@ -71,6 +74,77 @@ abstract class Vehicle extends PmVehicle
 	 */
 	abstract static function getDesign(): Skin;
 
+	/**
+	 * Handle player input.
+	 * @param float $x
+	 * @param float $y
+	 */
+	abstract function updateMotion(float $x, float $y): void;
+
+	/**
+	 * Removes the driver if possible.
+	 * @return bool
+	 */
+	public function removeDriver(): bool{
+		if($this->driver === null) return false;
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, true);
+
+		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, true);
+		$this->driver->sendMessage(C::GREEN."You are no longer driving this vehicle.");
+		$this->broadcastDriverLink(EntityLink::TYPE_REMOVE);
+		unset(Main::$driving[$this->driver->getRawUniqueId()]);
+		$this->driver = null;
+		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
+		return true;
+	}
+
+	/**
+	 * Sets the driver to the given player if possible.
+	 * @param Player $player
+	 * @return bool
+	 */
+	public function setDriver(Player $player): bool{
+		if($this->driver !== null){
+			if($this->driver->getUniqueId() === $player->getUniqueId()){
+				$player->sendMessage(C::RED."You are already driving this vehicle.");
+				return false;
+			}
+			$player->sendMessage(C::RED.$this->driver->getName()." is driving this vehicle.");
+			return false;
+		}
+
+		$player->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
+		$player->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
+		$player->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, true);
+
+		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, true);
+		$this->driver = $player;
+		Main::$driving[$this->driver->getRawUniqueId()] = $this;
+		$player->sendMessage(C::GREEN."You are now driving this vehicle.");
+		$this->broadcastDriverLink();
+		$player->sendPopup(C::GREEN."Sneak/Jump to leave the vehicle.", "[Vehicles]");
+		$this->setNameTag(C::RED."[".$player->getName()."] ".C::GOLD.$this->getName());
+		return true;
+	}
+
+	/**
+	 * Returns the driver if there is one.
+	 * @return Player|null
+	 */
+	public function getDriver(): ?Player{
+		return $this->driver;
+	}
+
+	/**
+	 * Checks if the vehicle as a driver.
+	 * @return bool
+	 */
+	public function hasDriver(): bool{
+		return $this->driver !== null;
+	}
+
 	public function isFireProof(): bool
 	{
 		return true;
@@ -79,7 +153,20 @@ abstract class Vehicle extends PmVehicle
 	protected function initEntity(): void
 	{
 		parent::initEntity();
-		$this->propertyManager->setString(Entity::DATA_INTERACTIVE_TAG, "Ride");
+	}
+
+	//Without this the player will not do the things it should be (driving, sitting etc)
+	protected function broadcastDriverLink(int $type = EntityLink::TYPE_RIDER): void{
+		if($this->driver === null) return;
+
+		foreach($this->getViewers() as $viewer) {
+			if (!isset($viewer->getViewers()[$this->driver->getLoaderId()])) {
+				$this->driver->spawnTo($viewer);
+			}
+			$pk = new SetActorLinkPacket();
+			$pk->link = new EntityLink($this->getId(), $this->driver->getId(), $type);
+			$viewer->sendDataPacket($pk);
+		}
 	}
 
 	protected function sendInitPacket(Player $player, Vehicle $obj) : void{
