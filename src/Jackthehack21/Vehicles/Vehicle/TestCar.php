@@ -12,19 +12,18 @@
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles\Object;
+namespace Jackthehack21\Vehicles\Vehicle;
 
 use Jackthehack21\Vehicles\Main;
-
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\entity\Skin;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\level\Level;
 use pocketmine\utils\UUID;
 use pocketmine\Player;
 
-class TrafficCone extends DisplayObject{
-	public $width = 0.6; //rough, probably no where near.
-	public $height = 1;
+class TestCar extends Vehicle {
+	public $width = 5; //rough, probably no where near.
+	public $height = 2;
 
 	protected $baseOffset = 1.615;
 
@@ -36,17 +35,13 @@ class TrafficCone extends DisplayObject{
 		$this->setCanSaveWithChunk(true);
 	}
 
-	public function canBeMovedByCurrents() : bool{
-		return true;
-	}
-
 	static function getName(): string{
-		return "Traffic-Cone";
+		return "Test-Car";
 	}
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->designFactory->getDesign("Traffic-Cone");
+		return Main::getInstance()->designFactory->getDesign("Test-Car");
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

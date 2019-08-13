@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles\Object;
 
 use ClassNotFoundException;
+use InvalidArgumentException;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
@@ -70,7 +71,7 @@ class ObjectFactory
 	public function registerDefaultObjects(){
 		Entity::registerEntity(TrafficCone::class, false);
 		$this->registeredTypes[TrafficCone::getName()] = "TrafficCone";
-		Entity::registerEntity(StopSign::class, false);
+		Entity::registerEntity(StopSign::class, true);
 		$this->registeredTypes[StopSign::getName()] = "StopSign";
 		Entity::registerEntity(NoEntrySign::class, false);
 		$this->registeredTypes[NoEntrySign::getName()] = "NoEntrySign";
@@ -78,7 +79,7 @@ class ObjectFactory
 		//others here
 
 		foreach(array_keys($this->registeredTypes) as $name){
-			$this->plugin->getLogger()->debug("Registered Object '${name}'");
+			$this->plugin->getLogger()->debug("Registered Object '{$name}'");
 		}
 	}
 
@@ -102,9 +103,12 @@ class ObjectFactory
 		}
 
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
+		if($entity === null){
+			throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
+		}
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->info("Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->debug("Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

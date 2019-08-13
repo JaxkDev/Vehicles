@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles\Vehicle;
 
 use ClassNotFoundException;
+use http\Exception\InvalidArgumentException;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
@@ -68,8 +69,13 @@ class VehicleFactory
 	}
 
 	public function registerDefaultVehicles(){
-		//$this->plugin->getLogger()->debug("Registered Vehicle 'VehicleNameHere'");
+		Entity::registerEntity(TestCar::class, false);
+		$this->registeredTypes[TestCar::getName()] = "TestCar";
 		//Todo others.
+
+		foreach(array_keys($this->registeredTypes) as $name){
+			$this->plugin->getLogger()->debug("Registered Vehicle '${name}'");
+		}
 	}
 
 	/**
@@ -87,12 +93,15 @@ class VehicleFactory
 
 		$type = $this->findClass($type);
 		if($type === null){
-			throw new ClassNotFoundException("Vehicle type \"".$type."\" Has escaped our reaches and cant be found...");
+			throw new ClassNotFoundException("Vehicle type \"${$type}\" Has escaped our reaches and cant be found...");
 		}
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
+		if($entity === null){
+			throw new InvalidArgumentException("Type '${$type}' is not a registered vehicle.");
+		}
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->info("Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->debug("Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return true;
 	}

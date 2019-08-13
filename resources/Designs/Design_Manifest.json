@@ -19,5 +19,12 @@
     "designFile": "NoEntrySign.png",
     "geometryName": "geometry.NoEntrySign.1",
     "geometryFile": "NoEntrySign_Geometry.json"
+  },
+  {
+    "name": "Test-Car",
+    "designId": "73192065-b069-4e15-897a-b6af73dbb5bd",
+    "designFile": "TestCar.png",
+    "geometryName": "geometry.TestCar.1",
+    "geometryFile": "TestCar_Geometry.json"
   }
 ]

@@ -15,16 +15,17 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles;
 
 use pocketmine\Player;
+use pocketmine\utils\Config;
 use pocketmine\event\Listener;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+
 use Jackthehack21\Vehicles\Vehicle\Vehicle; //weirdest namespace ive ever used (3x vehicles *lmao*).
 use Jackthehack21\Vehicles\Object\DisplayObject;
 use Jackthehack21\Vehicles\Object\ObjectFactory;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-
 use Jackthehack21\Vehicles\Vehicle\VehicleFactory;
 
 class Main extends PluginBase implements Listener
@@ -49,13 +50,19 @@ class Main extends PluginBase implements Listener
 	/** @var String|String[]|String[] */
 	public $interactCommands = [];
 
+	/** @var Config */
+	private $cfgObject;
+
+	/** @var object */
+	private $cfg;
+
 	public function onLoad()
 	{
 		self::$instance = $this;
 		$this->getLogger()->debug("Loading all resources...");
-		//resources here.
-		//Parse data to load previous vehicles.
-		//Prep all objects. (spawn onEnable)
+
+		//Save defaults here.
+		$this->saveConfig();
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
@@ -63,7 +70,12 @@ class Main extends PluginBase implements Listener
 		$this->objectFactory = new ObjectFactory($this);
 		$this->designFactory = new DesignFactory($this);
 
+		//Load any that need to be loaded.
 		$this->designFactory->loadAll();
+
+		$this->cfgObject = $this->getConfig();
+		$this->cfg = $this->cfgObject->getAll();
+		$this->getLogger()->debug("Loaded config v".$this->cfg["version"]);
 
 		$this->getLogger()->debug("Resources now loaded !");
 	}

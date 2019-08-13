@@ -16,10 +16,11 @@ namespace Jackthehack21\Vehicles;
 
 use Exception;
 use InvalidArgumentException;
+
 use pocketmine\entity\Skin;
+use pocketmine\plugin\PluginException;
 
 class DesignFactory{
-
 	private static $instance;
 
 	/** @var Main */
@@ -36,6 +37,7 @@ class DesignFactory{
 	
 	public function loadAll(): void{
 		$this->plugin->saveResource("Designs/Design_Manifest.json",true);
+
 		if(file_exists($this->plugin->getDataFolder()."Designs/Design_Manifest.json")){
 			$designManifest = json_decode(file_get_contents($this->plugin->getDataFolder()."Designs/Design_Manifest.json"), true) ?? [];
 			foreach($designManifest as $design){
@@ -58,7 +60,7 @@ class DesignFactory{
 					$this->designs[$design["name"]]->validate();
 				} catch (InvalidArgumentException $e){
 					unset($this->designs[$design["name"]]);
-					$this->plugin->getLogger()->warning("'".$design["name"]."' has not got valid data, and so it has been disabled.");
+					$this->plugin->getLogger()->warning("'".$design["name"]."' has not got valid skin data, and so it has been disabled.");
 					continue;
 				}
 				$this->plugin->getLogger()->debug("Loaded '".$design["name"]."'");
@@ -85,8 +87,7 @@ class DesignFactory{
 	 */
 	public function readDesignFile(string $path): ?string{
 		if(!extension_loaded("gd")) {
-			$this->plugin->getLogger()->error("GD library is not enabled!");
-			return null;
+			throw new PluginException("GD library is not enabled, to load designs it must be enabled in php.ini");
 		}
 		$img = @imagecreatefrompng($path);
 		$bytes = '';
@@ -101,18 +102,7 @@ class DesignFactory{
 			}
 		}
 		@imagedestroy($img);
-		return $bytes;/*
-		$combine = [];
-		for ($y = 0; $y < imagesy($img); $y++){
-			for ($x = 0; $x < imagesx($img); $x++){
-				$color = imagecolorsforindex($img, imagecolorat($img, $x, $y));
-				//TODO fix uneven alpha - if even possible..
-				$color['alpha'] = (($color['alpha'] << 1) ^ 0xff) - 1; // back = (($alpha << 1) ^ 0xff) - 1
-				$combine[] = sprintf("%02x%02x%02x%02x", $color['red'], $color['green'], $color['blue'], $color['alpha']??0);
-			}
-		}
-		$data = hex2bin(implode('', $combine));
-		return $data;*/
+		return $bytes;
 	}
 
 	public static function getInstance() : self{

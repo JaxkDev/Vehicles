@@ -16,9 +16,13 @@ namespace Jackthehack21\Vehicles\Vehicle;
 
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Skin;
+use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\entity\Entity;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\AddPlayerPacket;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\entity\Vehicle as PmVehicle;
@@ -76,5 +80,33 @@ abstract class Vehicle extends PmVehicle
 	{
 		parent::initEntity();
 		$this->propertyManager->setString(Entity::DATA_INTERACTIVE_TAG, "Ride");
+	}
+
+	protected function sendInitPacket(Player $player, Vehicle $obj) : void{
+		$skin = $obj->getDesign();
+		$skin->validate(); //Leave it to throw the exception as it should not be invalid this far in.
+
+		//Below adds the entity ID + skin to the list to be used in the AddPlayerPacket (WITHOUT THIS DEFAULT SKIN WILL BE USED).
+		$pk = new PlayerListPacket();
+		$pk->type = PlayerListPacket::TYPE_ADD;
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($obj->uuid, $obj->id, $obj::getName(), $obj::getDesign());;
+		$player->sendDataPacket($pk);
+
+		//Below adds the actual entity and puts the pieces together.
+		$pk = new AddPlayerPacket();
+		$pk->uuid = $obj->uuid;
+		$pk->item = Item::get(Item::AIR);
+		$pk->motion = $obj->getMotion();
+		$pk->position = $obj->asVector3();
+		$pk->entityRuntimeId = $obj->getId();
+		$pk->metadata = $obj->propertyManager->getAll();
+		$pk->username = $obj::getName()."-".$obj->id; //Unique.
+		$player->sendDataPacket($pk);
+
+		//Dont want to keep a fake person there...
+		$pk = new PlayerListPacket();
+		$pk->type = $pk::TYPE_REMOVE;
+		$pk->entries = [PlayerListEntry::createRemovalEntry($obj->uuid)];
+		$player->sendDataPacket($pk);
 	}
 }
