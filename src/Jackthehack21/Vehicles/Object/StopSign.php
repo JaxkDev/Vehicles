@@ -19,7 +19,6 @@ use Jackthehack21\Vehicles\Main;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
-use pocketmine\utils\UUID;
 use pocketmine\Player;
 
 class StopSign extends DisplayObject{
@@ -30,11 +29,7 @@ class StopSign extends DisplayObject{
 
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
-		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
-		$this->setNameTagAlwaysVisible(false);
-		$this->setCanSaveWithChunk(true);
-
 		$this->setScale(0.26);
 	}
 
@@ -44,7 +39,7 @@ class StopSign extends DisplayObject{
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->designFactory->getDesign("Stop-Sign");
+		return Main::getInstance()->designFactory->getDesign(self::getName());
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

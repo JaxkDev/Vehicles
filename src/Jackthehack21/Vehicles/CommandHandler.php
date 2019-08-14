@@ -15,9 +15,10 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles;
 
 use pocketmine\Player;
-use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use Jackthehack21\Vehicles\Vehicle\Vehicle;
 use pocketmine\command\ConsoleCommandSender;
+use Jackthehack21\Vehicles\Object\DisplayObject;
 
 use pocketmine\utils\TextFormat as C;
 
@@ -39,16 +40,12 @@ class CommandHandler
 	 * @internal Used directly from pmmp, no other plugins should be passing commands here (if really needed, dispatch command from server).
 	 *
 	 * @param CommandSender|Player $sender
-	 * @param Command $command
 	 * @param array $args
 	 */
-	function handleCommand(CommandSender $sender, Command $command, array $args): void{
+	function handleCommand(CommandSender $sender, array $args): void{
 		if($sender instanceof ConsoleCommandSender){
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
 			return;
-		}
-		if(strtolower($command->getName()) !== "vehicles"){
-			return; //Does pmmp do this for us, if only registering one command ?
 		}
 		if(count($args) == 0){
 			$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles help");
@@ -71,10 +68,18 @@ class CommandHandler
 					$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())).C::AQUA."\nObject Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
 					return;
 				}
-				if(!$this->plugin->vehicleFactory->spawnVehicle($args[0], $sender->getLevel(), $sender->asVector3()) and !$this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3())){
+				/** @var null|DisplayObject|Vehicle $entity */
+				$entity = null;
+				if($this->plugin->vehicleFactory->isRegistered($args[0])){
+					$entity = $this->plugin->vehicleFactory->spawnVehicle($args[0],$sender->getLevel(), $sender->asVector3());
+				}
+				elseif($this->plugin->objectFactory->isRegistered($args[0])){
+					$entity = $this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3());
+				}
+				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");
 					return;
-				};
+				}
 				$sender->sendMessage($this->prefix.C::GOLD."\"".$args[0]."\" spawned.");
 				break;
 			case 'del':

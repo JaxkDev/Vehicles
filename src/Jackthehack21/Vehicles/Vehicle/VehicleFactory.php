@@ -69,8 +69,8 @@ class VehicleFactory
 	}
 
 	public function registerDefaultVehicles(){
-		Entity::registerEntity(TestCar::class, false);
-		$this->registeredTypes[TestCar::getName()] = "TestCar";
+		Entity::registerEntity(BasicCar::class, false);
+		$this->registeredTypes[BasicCar::getName()] = "BasicCar";
 		//Todo others.
 
 		foreach(array_keys($this->registeredTypes) as $name){
@@ -88,13 +88,21 @@ class VehicleFactory
 		$this->plugin->getLogger()->debug("Registered Vehicle '".$vehicle::getName()."'");
 	}
 
-	public function spawnVehicle(string $type, Level $level, Vector3 $pos): bool{
-		if(!$this->isRegistered($type)) return false;
+	/**
+	 * Spawns a vehicle.
+	 * @param string $type
+	 * @param Level $level
+	 * @param Vector3 $pos
+	 * @return Vehicle
+	 */
+	public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicle{
+		if(!$this->isRegistered($type)) throw new \InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
 
 		$type = $this->findClass($type);
 		if($type === null){
 			throw new ClassNotFoundException("Vehicle type \"${$type}\" Has escaped our reaches and cant be found...");
 		}
+		/** @var Vehicle|null $entity */
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
 			throw new InvalidArgumentException("Type '${$type}' is not a registered vehicle.");
@@ -103,6 +111,6 @@ class VehicleFactory
 
 		$this->plugin->getLogger()->debug("Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
-		return true;
+		return $entity;
 	}
 }

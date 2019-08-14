@@ -35,7 +35,6 @@ permissions:
             description: "Allows user to remove a vehicle/object."
             default: op
 
-
-      vehicles.spawn:
-        description: "Allows user to spawn a vehicle/object."
-        default: op
+      vehicles.drive:
+        description: "Allows user to drive a vehicle."
+        default: true

@@ -16,6 +16,7 @@ namespace Jackthehack21\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\event\Listener;
+use pocketmine\utils\TextFormat as C;
 use Jackthehack21\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
 use Jackthehack21\Vehicles\Object\DisplayObject;
 use pocketmine\event\server\DataPacketReceiveEvent;
@@ -39,25 +40,28 @@ class EventHandler implements Listener
 		if($event->getEntity() instanceof DisplayObject or $event->getEntity() instanceof Vehicle){
 			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
 			if(!($event->getDamager() instanceof Player)) return;
-			/** @noinspection PhpUndefinedMethodInspection */
-			if(($index = array_search(strtolower($event->getDamager()->getName()),array_keys($this->plugin->interactCommands))) !== false){
+			/** @var Player $attacker */
+			$attacker = $event->getDamager();
+			/** @var Vehicle|DisplayObject $entity */
+			$entity = $event->getEntity();
+			if(($index = array_search(strtolower($attacker->getName()),array_keys($this->plugin->interactCommands))) !== false){
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
-				$attacker = $event->getDamager();
 				switch($command){
 					case 'remove':
 						$event->getEntity()->close();
-						/** @noinspection PhpUndefinedMethodInspection */
-						$attacker->sendMessage($this->plugin->prefix."'".$event->getEntity()->getName()."' has been removed.");
-						/** @noinspection PhpUndefinedMethodInspection */
+						$attacker->sendMessage($this->plugin->prefix."'".$entity->getName()."' has been removed.");
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
 					default:
 						$this->plugin->getLogger()->warning("Unknown interact command '{$command}'");
 				}
 			} else {
-				/** @noinspection PhpUndefinedMethodInspection */
-				$event->getEntity()->setDriver($event->getDamager());
+				if(!$attacker->hasPermission("vehicles.drive")){
+					$attacker->sendMessage(C::RED."You do not have permission to drive vehicles.");
+					return;
+				}
+				$entity->setDriver($attacker);
 			}
 		}
 	}
@@ -71,13 +75,14 @@ class EventHandler implements Listener
 		$packet = $event->getPacket();
 		$player = $event->getPlayer();
 
-		if($packet->motionX === 0 and $packet->motionY === 0) return; //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
-
 		if(isset(Main::$driving[$player->getRawUniqueId()])){
+			$event->setCancelled();
+			if($packet->motionX === 0.0 and $packet->motionY === 0.0) {
+				return;
+			} //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
 			/** @var Vehicle $vehicle */
 			$vehicle = Main::$driving[$player->getRawUniqueId()];
 			$vehicle->updateMotion($packet->motionX, $packet->motionY);
-			$event->setCancelled();
 		}
 	}
 

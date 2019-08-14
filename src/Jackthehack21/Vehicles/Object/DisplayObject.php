@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Object;
 
+use Jackthehack21\Vehicles\Main;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Skin;
@@ -35,6 +36,9 @@ abstract class DisplayObject extends Entity{
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
 
+	/** @var Main */
+	private $plugin;
+
 	/**
 	 * Vehicle constructor.
 	 * @param Level $level
@@ -42,9 +46,10 @@ abstract class DisplayObject extends Entity{
 	 */
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->uuid = UUID::fromRandom();
+		$this->plugin = Main::getInstance();
 		parent::__construct($level, $nbt);
-		$this->setNameTagAlwaysVisible(false);
-		$this->setCanSaveWithChunk(true); //Separated in the future as saving will be optional. (maybe will end up saving with chunks)
+		$this->setNameTagAlwaysVisible($this->plugin->cfg["objects"]["show-nametags"]);
+		$this->setCanSaveWithChunk(true);
 	}
 
 	/**
@@ -55,9 +60,9 @@ abstract class DisplayObject extends Entity{
 
 	/**
 	 * Returns the Design of the object.
-	 * @return Skin
+	 * @return Skin|null
 	 */
-	abstract static function getDesign(): Skin;
+	abstract static function getDesign(): ?Skin;
 
 	public function isFireProof(): bool
 	{

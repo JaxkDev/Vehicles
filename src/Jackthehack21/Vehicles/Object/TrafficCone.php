@@ -19,7 +19,6 @@ use Jackthehack21\Vehicles\Main;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
-use pocketmine\utils\UUID;
 use pocketmine\Player;
 
 class TrafficCone extends DisplayObject{
@@ -30,10 +29,7 @@ class TrafficCone extends DisplayObject{
 
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
-		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
-		$this->setNameTagAlwaysVisible(false);
-		$this->setCanSaveWithChunk(true);
 	}
 
 	public function canBeMovedByCurrents() : bool{
@@ -46,7 +42,7 @@ class TrafficCone extends DisplayObject{
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->designFactory->getDesign("Traffic-Cone");
+		return Main::getInstance()->designFactory->getDesign(self::getName());
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

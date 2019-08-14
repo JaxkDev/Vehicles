@@ -16,27 +16,28 @@ namespace Jackthehack21\Vehicles\Vehicle;
 
 use Jackthehack21\Vehicles\Main;
 use pocketmine\entity\Skin;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\level\Level;
 use pocketmine\utils\UUID;
 use pocketmine\Player;
 
-class TestCar extends Vehicle {
+class BasicCar extends Vehicle {
 	public $width = 3; //rough, probably no where near.
 	public $height = 2;
 
 	protected $baseOffset = 1.615;
+	protected $driverPosition = null;
 
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
+		$this->driverPosition = new Vector3(0.55, $this->height-2.4, 0.1);
 		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
 		$this->setNameTagAlwaysVisible(true);
 		$this->setCanSaveWithChunk(true);
 
-		$this->setScale(0.85);
-
-		//driver - [ 1.57, 0.5, -1 ]
+		$this->setScale(1.4);
 	}
 
 	public function recalculateBoundingBox(): void
@@ -46,12 +47,12 @@ class TestCar extends Vehicle {
 	}
 
 	static function getName(): string{
-		return "Test-Car";
+		return "Basic-Car";
 	}
 
 	static function getDesign(): Skin
 	{
-		return Main::getInstance()->designFactory->getDesign("Test-Car");
+		return Main::getInstance()->designFactory->getDesign(self::getName());
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{
@@ -65,17 +66,25 @@ class TestCar extends Vehicle {
 	 */
 	function updateMotion(float $x, float $y): void
 	{
-		if($x > 0 or $x < 0){
-			$this->yaw = $this->driver->getYaw();
+		//				(1 if only one button, 0.7 if two)
+		//+y = forward. (+1/+0.7)
+		//-y = backward. (-1/-0.7)
+		//+x = left (+1/+0.7)
+		//-x = right (-1/-0.7)
+		//var_dump($x,$y);
+		//todo find the cause of entity rotating 45^ ish when reversing.
+		if($x !== 0){
+			$this->yaw -= $x*3;
+			$this->motion = $this->getDirectionVector();
 		}
 
 		if($y > 0){
+			//forward
 			$this->motion = $this->getDirectionVector()->multiply($y);
-			$this->yaw = $this->driver->getYaw();
+			//$this->yaw = $this->driver->getYaw(); - turn based on players rotation
 		} elseif ($y < 0){
+			//reverse
 			$this->motion = $this->getDirectionVector()->multiply($y);
-			//$this->yaw = 0-$this->driver->getYaw();
 		}
-
 	}
 }

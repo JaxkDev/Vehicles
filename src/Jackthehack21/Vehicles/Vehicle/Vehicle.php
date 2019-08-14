@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles\Vehicle;
 
 use Jackthehack21\Vehicles\Main;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
@@ -40,7 +41,9 @@ abstract class Vehicle extends Entity implements Rideable
 
 	/** @var null|Player */
 	protected $driver;
-	protected $driverOffset = 0;
+
+	/** @var null|Vector3 */
+	protected $driverPosition = null;
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
@@ -58,8 +61,11 @@ abstract class Vehicle extends Entity implements Rideable
 		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
 		$this->setNameTagAlwaysVisible(true);
 		$this->setCanSaveWithChunk(true);
+	}
 
-		$this->propertyManager->setString(Entity::DATA_INTERACTIVE_TAG, "Drive"); //Doesnt work ?
+	public function getRiderSeatPosition(){
+		if($this->driverPosition === null) return new Vector3(0, $this->height, 0);
+		else return $this->driverPosition;
 	}
 
 	/**
@@ -70,9 +76,9 @@ abstract class Vehicle extends Entity implements Rideable
 
 	/**
 	 * Returns the Design of the vehicle.
-	 * @return Skin
+	 * @return Skin|null
 	 */
-	abstract static function getDesign(): Skin;
+	abstract static function getDesign(): ?Skin;
 
 	/**
 	 * Handle player input.
@@ -96,7 +102,6 @@ abstract class Vehicle extends Entity implements Rideable
 		$this->broadcastDriverLink(EntityLink::TYPE_REMOVE);
 		unset(Main::$driving[$this->driver->getRawUniqueId()]);
 		$this->driver = null;
-		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
 		return true;
 	}
 
@@ -118,6 +123,7 @@ abstract class Vehicle extends Entity implements Rideable
 		$player->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
 		$player->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
 		$player->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, true);
+		$player->getDataPropertyManager()->setVector3(Entity::DATA_RIDER_SEAT_POSITION, $this->getRiderSeatPosition());
 
 		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, true);
 		$this->driver = $player;
@@ -125,7 +131,6 @@ abstract class Vehicle extends Entity implements Rideable
 		$player->sendMessage(C::GREEN."You are now driving this vehicle.");
 		$this->broadcastDriverLink();
 		$player->sendPopup(C::GREEN."Sneak/Jump to leave the vehicle.", "[Vehicles]");
-		$this->setNameTag(C::RED."[".$player->getName()."] ".C::GOLD.$this->getName());
 		return true;
 	}
 

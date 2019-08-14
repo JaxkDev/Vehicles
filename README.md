@@ -3,7 +3,7 @@
 
 _Vehicles adds the following things:_
 #### Available Vehicles:
-- None
+- Basic-Car
 
 #### Available Objects:
 - Traffic-Cone

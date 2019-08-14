@@ -53,8 +53,8 @@ class Main extends PluginBase
 	/** @var Config */
 	private $cfgObject;
 
-	/** @var object */
-	private $cfg;
+	/** @var array */
+	public $cfg;
 
 	public function onLoad()
 	{
@@ -79,6 +79,7 @@ class Main extends PluginBase
 		$this->getLogger()->debug("Loaded Config file, Version: {$this->cfg["version"]}");
 
 		$this->getLogger()->debug("Resources now loaded !");
+		var_dump($this->cfg["objects"]["same-rotation"]);
 	}
 
 	public function onEnable()
@@ -96,8 +97,14 @@ class Main extends PluginBase
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
 	{
-		$this->commandHandler->handleCommand($sender, $command, $args);
+		$this->commandHandler->handleCommand($sender, $args);
 		return true;
+	}
+
+	public function saveCfg() : void
+	{
+		$this->cfgObject->setAll($this->cfg);
+		$this->cfgObject->save();
 	}
 
 	public static function getInstance() : self{

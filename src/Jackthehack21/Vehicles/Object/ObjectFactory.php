@@ -94,14 +94,22 @@ class ObjectFactory
 		$this->plugin->getLogger()->debug("Registered Object '".$object::getName()."'");
 	}
 
-	public function spawnObject(string $type, Level $level, Vector3 $pos): bool{
-		if(!$this->isRegistered($type)) return false;
+	/**
+	 * Spawn a object in.
+	 * @param string $type
+	 * @param Level $level
+	 * @param Vector3 $pos
+	 * @return DisplayObject
+	 */
+	public function spawnObject(string $type, Level $level, Vector3 $pos): DisplayObject{
+		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
 
 		$type = $this->findClass($type);
 		if($type === null){
 			throw new ClassNotFoundException("Object \"".$type."\" Has escaped our reaches and cannot be found...");
 		}
 
+		/** @var DisplayObject|null $entity */
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
 			throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
@@ -110,6 +118,6 @@ class ObjectFactory
 
 		$this->plugin->getLogger()->debug("Object \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
-		return true;
+		return $entity;
 	}
 }

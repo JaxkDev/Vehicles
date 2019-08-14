@@ -1,7 +1,4 @@
 version: 0
 
 objects:
-  lock-rotation: true
-  rotation-intervals: 90
-  
   show-nametags: false
