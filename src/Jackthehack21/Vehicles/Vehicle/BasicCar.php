@@ -19,7 +19,6 @@ use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\level\Level;
-use pocketmine\utils\UUID;
 use pocketmine\Player;
 
 class BasicCar extends Vehicle {
@@ -32,10 +31,7 @@ class BasicCar extends Vehicle {
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
 		$this->driverPosition = new Vector3(0.55, $this->height-2.4, 0.1);
-		$this->uuid = UUID::fromRandom();
 		parent::__construct($level, $nbt);
-		$this->setNameTagAlwaysVisible(true);
-		$this->setCanSaveWithChunk(true);
 
 		$this->setScale(1.4);
 	}
@@ -71,20 +67,18 @@ class BasicCar extends Vehicle {
 		//-y = backward. (-1/-0.7)
 		//+x = left (+1/+0.7)
 		//-x = right (-1/-0.7)
-		//var_dump($x,$y);
-		//todo find the cause of entity rotating 45^ ish when reversing.
 		if($x !== 0){
-			$this->yaw -= $x*3;
+			$this->yaw -= $x*6;
 			$this->motion = $this->getDirectionVector();
 		}
 
 		if($y > 0){
 			//forward
-			$this->motion = $this->getDirectionVector()->multiply($y);
-			//$this->yaw = $this->driver->getYaw(); - turn based on players rotation
+			$this->motion = $this->getDirectionVector()->multiply($y*2.5);
+			$this->yaw = $this->driver->getYaw();// - turn based on players rotation
 		} elseif ($y < 0){
 			//reverse
-			$this->motion = $this->getDirectionVector()->multiply($y);
+			$this->motion = $this->getDirectionVector()->multiply($y*2.5);
 		}
 	}
 }

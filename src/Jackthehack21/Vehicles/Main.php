@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
+use Jackthehack21\Vehicles\Object\DisplayObject;
+use Jackthehack21\Vehicles\Vehicle\Vehicle;
 use pocketmine\utils\Config;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
@@ -28,6 +30,7 @@ class Main extends PluginBase
 
 	private static $instance;
 
+	/** @var String|Vehicle[]|DisplayObject[] */
 	public static $driving = [];
 
 	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
@@ -79,7 +82,6 @@ class Main extends PluginBase
 		$this->getLogger()->debug("Loaded Config file, Version: {$this->cfg["version"]}");
 
 		$this->getLogger()->debug("Resources now loaded !");
-		var_dump($this->cfg["objects"]["same-rotation"]);
 	}
 
 	public function onEnable()

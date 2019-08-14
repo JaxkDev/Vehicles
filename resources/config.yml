@@ -2,3 +2,6 @@ version: 0
 
 objects:
   show-nametags: false
+
+vehicles:
+  show-nametags: true

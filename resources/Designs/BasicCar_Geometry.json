@@ -3,7 +3,7 @@
 	"minecraft:geometry": [
 		{
 			"description": {
-				"identifier": "geometry.BasicCar.2",
+				"identifier": "geometry.BasicCar.3",
 				"texture_width": 128,
 				"texture_height": 128,
 				"visible_bounds_width": 5,
@@ -12,7 +12,7 @@
 			},
 			"bones": [
 				{
-					"name": "body",
+					"name": "head",
 					"pivot": [5.70313, 7.36429, 0.23099],
 					"cubes": [
 						{"origin": [-14.64843, 1.18215, 28.1155], "size": [29.5, 10, 5.5], "uv": [0, 0]},

@@ -14,6 +14,10 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles;
 
+use pocketmine\event\entity\EntityLevelChangeEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
@@ -34,6 +38,47 @@ class EventHandler implements Listener
 	public function __construct(Main $plugin)
 	{
 		$this->plugin = $plugin;
+	}
+
+	public function onPlayerLeaveEvent(PlayerQuitEvent $event){
+		$player = $event->getPlayer();
+		if(isset(Main::$driving[$player->getRawUniqueId()])){
+			Main::$driving[$player->getRawUniqueId()]->removeDriver();
+			$this->plugin->getLogger()->debug($player->getName()." Has left the server while driving, he has been kicked from their vehicle.");
+		}
+	}
+
+	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event){
+		if($event->getEntity() instanceof Player){
+			/** @var Player $player */
+			$player = $event->getEntity();
+			if(isset(Main::$driving[$player->getRawUniqueId()])){
+				Main::$driving[$player->getRawUniqueId()]->removeDriver();
+				$player->sendMessage(C::RED."You cannot change level with a vehicle, you have been kicked from your vehicle.");
+				$this->plugin->getLogger()->debug($player->getName()." Has changed level while driving, he has been kicked from their vehicle.");
+			}
+		}
+	}
+
+	public function onPlayerDeathEvent(PlayerDeathEvent $event){
+		$player = $event->getPlayer();
+		if(isset(Main::$driving[$player->getRawUniqueId()])){
+			Main::$driving[$player->getRawUniqueId()]->removeDriver();
+			$player->sendMessage(C::RED."You were killed so you have been kicked from your vehicle.");
+			$this->plugin->getLogger()->debug($player->getName()." Has died while driving, he has been kicked from their vehicle.");
+		}
+	}
+
+	public function onPlayerTeleportEvent(EntityTeleportEvent $event){
+		if($event->getEntity() instanceof Player){
+			/** @var Player $player */
+			$player = $event->getEntity();
+			if(isset(Main::$driving[$player->getRawUniqueId()])){
+				Main::$driving[$player->getRawUniqueId()]->removeDriver();
+				$player->sendMessage(C::RED."You cannot teleport with a vehicle, you have been kicked from your vehicle.");
+				$this->plugin->getLogger()->debug($player->getName()." Has teleported while driving, he has been kicked from their vehicle.");
+			}
+		}
 	}
 
 	public function onEntityDamageEvent(EntityDamageByEntityEvent $event){
@@ -98,7 +143,8 @@ class EventHandler implements Listener
 			$player = $event->getPlayer();
 			$vehicle = $player->getLevel()->getEntity($packet->target);
 			if($vehicle instanceof Vehicle) {
-				if ($vehicle->getDriver()->getUniqueId() === $event->getPlayer()->getUniqueId()) {
+				if($vehicle->getDriver() === null) return;
+				if($vehicle->getDriver()->getUniqueId() === $event->getPlayer()->getUniqueId()) {
 					$vehicle->removeDriver();
 					$event->setCancelled();
 				} else {

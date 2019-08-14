@@ -48,6 +48,9 @@ abstract class Vehicle extends Entity implements Rideable
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
 
+	/** @var Main */
+	private $plugin;
+
 	/**
 	 * Vehicle constructor.
 	 * @param Level $level
@@ -55,11 +58,12 @@ abstract class Vehicle extends Entity implements Rideable
 	 */
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->uuid = UUID::fromRandom();
+		$this->plugin = Main::getInstance();
 
 		parent::__construct($level, $nbt);
 
 		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
-		$this->setNameTagAlwaysVisible(true);
+		$this->setNameTagAlwaysVisible($this->plugin->cfg["vehicles"]["show-nametags"]);
 		$this->setCanSaveWithChunk(true);
 	}
 
