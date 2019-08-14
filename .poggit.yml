@@ -1,0 +1,7 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/jackthehack21/Vehicles
+branches:
+- master
+projects:
+  Vehicles:
+    path: ""
+...
