@@ -81,6 +81,11 @@ class EventHandler implements Listener
 		}
 	}
 
+	/**
+	 * @param EntityDamageByEntityEvent $event
+	 * @priority Lowest
+	 * Some interruption by MultiWorld
+	 */
 	public function onEntityDamageEvent(EntityDamageByEntityEvent $event){
 		if($event->getEntity() instanceof DisplayObject or $event->getEntity() instanceof Vehicle){
 			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
@@ -102,11 +107,13 @@ class EventHandler implements Listener
 						$this->plugin->getLogger()->warning("Unknown interact command '{$command}'");
 				}
 			} else {
-				if(!$attacker->hasPermission("vehicles.drive")){
-					$attacker->sendMessage(C::RED."You do not have permission to drive vehicles.");
-					return;
+				if($entity instanceof Vehicle) {
+					if (!$attacker->hasPermission("vehicles.drive")) {
+						$attacker->sendMessage(C::RED . "You do not have permission to drive vehicles.");
+						return;
+					}
+					$entity->setDriver($attacker);
 				}
-				$entity->setDriver($attacker);
 			}
 		}
 	}
