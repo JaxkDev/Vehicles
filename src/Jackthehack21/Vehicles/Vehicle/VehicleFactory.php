@@ -76,6 +76,8 @@ class VehicleFactory
 		foreach(array_keys($this->registeredTypes) as $name){
 			$this->plugin->getLogger()->debug("Registered Vehicle '${name}'");
 		}
+
+		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") vehicle(s)");
 	}
 
 	/**

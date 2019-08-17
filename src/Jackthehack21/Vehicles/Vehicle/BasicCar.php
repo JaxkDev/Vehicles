@@ -26,11 +26,11 @@ class BasicCar extends Vehicle {
 	public $height = 2;
 
 	protected $baseOffset = 1.615;
-	protected $driverPosition = null;
 
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
 		$this->driverPosition = new Vector3(0.55, $this->height-2.4, 0.1);
+		$this->passengerPositions[] = new Vector3(-0.55, $this->height-2.4, 0.1);
 		parent::__construct($level, $nbt);
 
 		$this->setScale(1.4);

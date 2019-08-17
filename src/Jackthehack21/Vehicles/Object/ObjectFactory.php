@@ -81,6 +81,8 @@ class ObjectFactory
 		foreach(array_keys($this->registeredTypes) as $name){
 			$this->plugin->getLogger()->debug("Registered Object '{$name}'");
 		}
+
+		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") object(s)");
 	}
 
 	/**

@@ -83,26 +83,43 @@ class DesignFactory{
 	/**
 	 * Return the RGBA Byte array ready for use from a UV Map (png)
 	 * @param string $path
-	 * @return string|null
+	 * @return string|null RGBA Bytes to use.
+	 * @throws Exception
 	 */
 	public function readDesignFile(string $path): ?string{
-		if(!extension_loaded("gd")) {
-			throw new PluginException("GD library is not enabled, to load designs it must be enabled in php.ini");
-		}
-		$img = @imagecreatefrompng($path);
-		$bytes = '';
-		for ($y = 0; $y < imagesy($img); $y++) {
-			for ($x = 0; $x < imagesx($img); $x++) {
-				$rgba = @imagecolorat($img, $x, $y);
-				$a = chr(((~((int)($rgba >> 24))) << 1) & 0xff);
-				$r = chr(($rgba >> 16) & 0xff);
-				$g = chr(($rgba >> 8) & 0xff);
-				$b = chr($rgba & 0xff);
-				$bytes .= $r.$g.$b.$a;
+		$type = pathinfo($path, PATHINFO_EXTENSION);
+		if($type === "png"){
+			if(file_exists(rtrim($path,"png")."json")){
+				$data = json_decode(file_get_contents($path));
+				$data = base64_decode($data->data);
+				$this->plugin->getLogger()->debug("Loaded design from generated json.");
+				return $data;
 			}
-		}
-		@imagedestroy($img);
-		return $bytes;
+			if (!extension_loaded("gd")) {
+				throw new PluginException("GD library is not enabled, to load designs it must be enabled. *See php.ini to enable it*");
+			}
+			$img = @imagecreatefrompng($path);
+			$bytes = '';
+			for ($y = 0; $y < imagesy($img); $y++) {
+				for ($x = 0; $x < imagesx($img); $x++) {
+					$rgba = @imagecolorat($img, $x, $y);
+					$a = chr(((~((int)($rgba >> 24))) << 1) & 0xff);
+					$r = chr(($rgba >> 16) & 0xff);
+					$g = chr(($rgba >> 8) & 0xff);
+					$b = chr($rgba & 0xff);
+					$bytes .= $r . $g . $b . $a;
+				}
+			}
+			@imagedestroy($img);
+			file_put_contents(rtrim($path, "png") . "json", json_encode(["data" => base64_encode($bytes)]));
+			$this->plugin->getLogger()->debug("Saved design to json.");
+			return $bytes;
+		} elseif ($type === "json") {
+			$this->plugin->getLogger()->debug("Loaded design from original json.");
+			$data = json_decode(file_get_contents($path));
+			$data = base64_decode($data->data);
+			return $data;
+		} else throw new Exception("Unknown data type ${type} received.");
 	}
 
 	public static function getInstance() : self{

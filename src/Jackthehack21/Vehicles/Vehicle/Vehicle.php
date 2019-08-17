@@ -15,12 +15,12 @@ declare(strict_types=1);
 namespace Jackthehack21\Vehicles\Vehicle;
 
 use Jackthehack21\Vehicles\Main;
-use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
 use pocketmine\level\Level;
 use pocketmine\entity\Skin;
+use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Rideable;
 use pocketmine\entity\EntityIds;
@@ -31,6 +31,7 @@ use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
+use LogicException;
 
 abstract class Vehicle extends Entity implements Rideable
 {
@@ -40,10 +41,16 @@ abstract class Vehicle extends Entity implements Rideable
 	protected $drag = 0.5;
 
 	/** @var null|Player */
-	protected $driver;
+	protected $driver = null;
+
+	/** @var Player[] */
+	protected $passengers = [];
 
 	/** @var null|Vector3 */
 	protected $driverPosition = null;
+
+	/** @var Vector3[] */
+	protected $passengerPositions = [];
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
@@ -67,9 +74,29 @@ abstract class Vehicle extends Entity implements Rideable
 		$this->setCanSaveWithChunk(true);
 	}
 
-	public function getRiderSeatPosition(){
+	public function getDriverSeatPosition() : ?Vector3{
 		if($this->driverPosition === null) return new Vector3(0, $this->height, 0);
 		else return $this->driverPosition;
+	}
+
+	public function getPassengerSeatPosition(int $seatNumber) : ?Vector3{
+		if(isset($this->passengerPositions[$seatNumber])) return $this->passengerPositions[$seatNumber];
+		return null;
+	}
+
+	public function getNextAvailableSeat(): ?int{
+		$max = count($this->passengerPositions);
+		$current = count($this->passengers);
+		if($max === $current) return null;
+		for($i = 0; $i < $max; $i++){
+			if(!isset($this->passengers[$i])) return $i;
+		}
+		throw new LogicException("No seat found when max seats doesnt match currently used seats.");
+	}
+
+	public function isEmpty(): bool{
+		if(count($this->passengers) === 0 and $this->driver === null) return true;
+		return false;
 	}
 
 	/**
@@ -91,21 +118,77 @@ abstract class Vehicle extends Entity implements Rideable
 	 */
 	abstract function updateMotion(float $x, float $y): void;
 
+
+	/**
+	 * Remove the given player from the vehicle
+	 * @param Player $player
+	 * @return bool
+	 */
+	public function removePlayer(Player $player): bool{
+		if($this->driver->getUniqueId() === $player->getUniqueId()) return $this->removeDriver();
+		return $this->removePassengerByUUID($player->getUniqueId());
+	}
+
+	public function removePassengerByUUID(UUID $id): bool{
+		foreach(array_keys($this->passengers) as $i){
+			if($this->passengers[$i]->getUniqueId() === $id){
+				return $this->removePassenger($i);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Remove passenger by seat number.
+	 * @param int $seat
+	 * @return bool
+	 */
+	public function removePassenger($seat): bool{
+		if(isset($this->passengers[$seat])){
+			$player = $this->passengers[$seat];
+			unset($this->passengers[$seat]);
+			unset(Main::$inVehicle[$player->getRawUniqueId()]);
+			$player->setGenericFlag(Entity::DATA_FLAG_RIDING, false);
+			$player->setGenericFlag(Entity::DATA_FLAG_SITTING, false);
+			$this->broadcastLink($player, EntityLink::TYPE_REMOVE);
+			$player->sendMessage(C::GREEN."You are no longer in this vehicle.");
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Removes the driver if possible.
 	 * @return bool
 	 */
 	public function removeDriver(): bool{
 		if($this->driver === null) return false;
-		$this->driver->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
-		$this->driver->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
-		$this->driver->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, true);
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_RIDING, false);
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_SITTING, false);
+		$this->driver->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, false);
 
-		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, true);
+		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, false);
 		$this->driver->sendMessage(C::GREEN."You are no longer driving this vehicle.");
-		$this->broadcastDriverLink(EntityLink::TYPE_REMOVE);
-		unset(Main::$driving[$this->driver->getRawUniqueId()]);
+		$this->broadcastLink($this->driver, EntityLink::TYPE_REMOVE);
+		unset(Main::$inVehicle[$this->driver->getRawUniqueId()]);
 		$this->driver = null;
+		return true;
+	}
+
+	public function setPassenger(Player $player, ?int $seat = null): bool{
+		if($seat !== null){
+			if(isset($this->passengers[$seat])) return false;
+		} else {
+			$seat = $this->getNextAvailableSeat();
+			if($seat === null) return false;
+		}
+		$this->passengers[$seat] = $player;
+		Main::$inVehicle[$player->getRawUniqueId()] = $this;
+		$player->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
+		$player->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
+		$player->getDataPropertyManager()->setVector3(Entity::DATA_RIDER_SEAT_POSITION, $this->getPassengerSeatPosition($seat));
+		$this->broadcastLink($player, EntityLink::TYPE_PASSENGER);
+		$player->sendMessage(C::GREEN."You are now a passenger in this vehicle.");
 		return true;
 	}
 
@@ -127,13 +210,13 @@ abstract class Vehicle extends Entity implements Rideable
 		$player->setGenericFlag(Entity::DATA_FLAG_RIDING, true);
 		$player->setGenericFlag(Entity::DATA_FLAG_SITTING, true);
 		$player->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, true);
-		$player->getDataPropertyManager()->setVector3(Entity::DATA_RIDER_SEAT_POSITION, $this->getRiderSeatPosition());
+		$player->getDataPropertyManager()->setVector3(Entity::DATA_RIDER_SEAT_POSITION, $this->getDriverSeatPosition());
 
 		$this->setGenericFlag(Entity::DATA_FLAG_SADDLED, true);
 		$this->driver = $player;
-		Main::$driving[$this->driver->getRawUniqueId()] = $this;
+		Main::$inVehicle[$this->driver->getRawUniqueId()] = $this;
 		$player->sendMessage(C::GREEN."You are now driving this vehicle.");
-		$this->broadcastDriverLink();
+		$this->broadcastLink($this->driver);
 		$player->sendPopup(C::GREEN."Sneak/Jump to leave the vehicle.", "[Vehicles]");
 		return true;
 	}
@@ -165,15 +248,13 @@ abstract class Vehicle extends Entity implements Rideable
 	}
 
 	//Without this the player will not do the things it should be (driving, sitting etc)
-	protected function broadcastDriverLink(int $type = EntityLink::TYPE_RIDER): void{
-		if($this->driver === null) return;
-
+	protected function broadcastLink(Player $player, int $type = EntityLink::TYPE_RIDER): void{
 		foreach($this->getViewers() as $viewer) {
-			if (!isset($viewer->getViewers()[$this->driver->getLoaderId()])) {
-				$this->driver->spawnTo($viewer);
+			if (!isset($viewer->getViewers()[$player->getLoaderId()])) {
+				$player->spawnTo($viewer);
 			}
 			$pk = new SetActorLinkPacket();
-			$pk->link = new EntityLink($this->getId(), $this->driver->getId(), $type);
+			$pk->link = new EntityLink($this->getId(), $player->getId(), $type);
 			$viewer->sendDataPacket($pk);
 		}
 	}

@@ -31,7 +31,7 @@ class Main extends PluginBase
 	private static $instance;
 
 	/** @var String|Vehicle[]|DisplayObject[] */
-	public static $driving = [];
+	public static $inVehicle = [];
 
 	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
 
