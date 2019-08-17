@@ -117,7 +117,8 @@ class EventHandler implements Listener
 						$attacker->sendMessage(C::RED . "You do not have permission to drive vehicles.");
 						return;
 					}
-					$entity->setDriver($attacker);
+					if($entity->getDriver() === null) $entity->setDriver($attacker);
+					else $entity->setPassenger($attacker);
 				}
 			}
 		}
@@ -139,6 +140,7 @@ class EventHandler implements Listener
 			} //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
 			/** @var Vehicle $vehicle */
 			$vehicle = Main::$inVehicle[$player->getRawUniqueId()];
+			if($vehicle->getDriver() === null) return;
 			if($vehicle->getDriver()->getUniqueId() === $player->getUniqueId()) $vehicle->updateMotion($packet->motionX, $packet->motionY);
 		}
 	}

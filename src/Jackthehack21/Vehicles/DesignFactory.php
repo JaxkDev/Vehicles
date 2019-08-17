@@ -36,7 +36,7 @@ class DesignFactory{
 	}
 	
 	public function loadAll(): void{
-		$this->plugin->saveResource("Designs/Design_Manifest.json",true);
+		$this->plugin->saveResource("Designs/Design_Manifest.json");
 
 		if(file_exists($this->plugin->getDataFolder()."Designs/Design_Manifest.json")){
 			$designManifest = json_decode(file_get_contents($this->plugin->getDataFolder()."Designs/Design_Manifest.json"), true) ?? [];
