@@ -66,6 +66,8 @@ class Main extends PluginBase
 
 		//Save defaults here.
 		$this->saveConfig();
+		$this->saveResource("Objects/README.md");
+		$this->saveResource("Vehicles/README.md");
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
@@ -86,12 +88,16 @@ class Main extends PluginBase
 
 	public function onEnable()
 	{
-		$this->getLogger()->debug("Registering objects...");
+		$this->getLogger()->debug("Registering default objects...");
 		$this->objectFactory->registerDefaultObjects();
+		$this->getLogger()->debug("Registering external objects...");
+		$this->objectFactory->registerExternalObjects();
 		$this->getLogger()->debug("That's all done now.");
 
-		$this->getLogger()->debug("Registering vehicles...");
+		$this->getLogger()->debug("Registering default vehicles...");
 		$this->vehicleFactory->registerDefaultVehicles();
+		$this->getLogger()->debug("Registering external vehicles...");
+		$this->vehicleFactory->registerExternalVehicles();
 		$this->getLogger()->debug("That's all done now.");
 
 		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);

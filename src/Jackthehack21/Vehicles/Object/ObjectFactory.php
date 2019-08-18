@@ -14,12 +14,15 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Object;
 
-use ClassNotFoundException;
-use InvalidArgumentException;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use Jackthehack21\Vehicles\Main;
+
+use ReflectionClass;
+use ReflectionException;
+use ClassNotFoundException;
+use InvalidArgumentException;
 
 class ObjectFactory
 {
@@ -31,7 +34,7 @@ class ObjectFactory
 
 	/**
 	 * @internal Should only be done once, may corrupt data further down the line.
-	 * VehicleFactory constructor.
+	 * objectFactory constructor.
 	 * @param Main $plugin
 	 */
 	public function __construct(Main $plugin)
@@ -68,6 +71,32 @@ class ObjectFactory
 		return null;
 	}
 
+	public function registerExternalObjects(){
+		$scan = scandir($this->plugin->getDataFolder()."Objects/");
+		$dir = [];
+		foreach($scan as $file) {
+			if(pathinfo($this->plugin->getDataFolder()."Objects\\".$file, PATHINFO_EXTENSION) === "php") $dir[$this->plugin->getDataFolder()."Objects\\".$file] = rtrim($file,".php");
+		}
+		foreach($dir as $path => $file){
+			if($this->isRegistered($file)){
+				$this->plugin->getLogger()->warning("External Object '".$file."' already exists.");
+				continue;
+			}
+			/** @noinspection PhpIncludeInspection */
+			require $path;
+			$className = "Jackthehack21\\Vehicles\\External\\".$file;
+			$rc = new reflectionClass($className);
+			/** @var DisplayObject $class */
+			$class = $rc->newInstanceWithoutConstructor();
+			if(!is_a($class, DisplayObject::class)){
+				$this->plugin->getLogger()->warning("External object '".$file."' is not of type DisplayObject.");
+				continue;
+			}
+			$this->registerObject($class);
+		}
+		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") vehicle(s)");
+	}
+
 	public function registerDefaultObjects(){
 		Entity::registerEntity(TrafficCone::class, false);
 		$this->registeredTypes[TrafficCone::getName()] = "TrafficCone";
@@ -81,17 +110,16 @@ class ObjectFactory
 		foreach(array_keys($this->registeredTypes) as $name){
 			$this->plugin->getLogger()->debug("Registered Object '{$name}'");
 		}
-
-		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") object(s)");
 	}
 
 	/**
 	 * Register the vehicle entity with the server.
 	 * @param DisplayObject $object
+	 * @throws ReflectionException
 	 */
 	public function registerObject(DisplayObject $object){
 		Entity::registerEntity(get_class($object), false);
-		$this->registeredTypes[$object::getName()] = get_class($object);
+		$this->registeredTypes[$object::getName()] =  (new ReflectionClass($object))->getShortName();;
 
 		$this->plugin->getLogger()->debug("Registered Object '".$object::getName()."'");
 	}

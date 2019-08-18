@@ -14,12 +14,15 @@ declare(strict_types=1);
 
 namespace Jackthehack21\Vehicles\Vehicle;
 
-use ClassNotFoundException;
-use http\Exception\InvalidArgumentException;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use Jackthehack21\Vehicles\Main;
+
+use reflectionClass;
+use ReflectionException;
+use ClassNotFoundException;
+use InvalidArgumentException;
 
 class VehicleFactory
 {
@@ -68,6 +71,32 @@ class VehicleFactory
 		return null;
 	}
 
+	public function registerExternalVehicles(){
+		$scan = scandir($this->plugin->getDataFolder()."Vehicles/");
+		$dir = [];
+		foreach($scan as $file) {
+			if(pathinfo($this->plugin->getDataFolder()."Vehicles\\".$file, PATHINFO_EXTENSION) === "php") $dir[$this->plugin->getDataFolder()."Vehicles\\".$file] = rtrim($file,".php");
+		}
+		foreach($dir as $path => $file){
+			if($this->isRegistered($file)){
+				$this->plugin->getLogger()->warning("External vehicle '".$file."' already exists.");
+				continue;
+			}
+			/** @noinspection PhpIncludeInspection */
+			require $path;
+			$className = "Jackthehack21\\Vehicles\\External\\".$file;
+			$rc = new reflectionClass($className);
+			/** @var Vehicle $class */
+			$class = $rc->newInstanceWithoutConstructor();
+			if(!is_a($class, Vehicle::class)){
+				$this->plugin->getLogger()->warning("External vehicle '".$file."' is not of type Vehicle.");
+				continue;
+			}
+			$this->registerVehicle($class);
+		}
+		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") vehicle(s)");
+	}
+
 	public function registerDefaultVehicles(){
 		Entity::registerEntity(BasicCar::class, false);
 		$this->registeredTypes[BasicCar::getName()] = "BasicCar";
@@ -76,17 +105,16 @@ class VehicleFactory
 		foreach(array_keys($this->registeredTypes) as $name){
 			$this->plugin->getLogger()->debug("Registered Vehicle '${name}'");
 		}
-
-		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") vehicle(s)");
 	}
 
 	/**
 	 * Register the vehicle entity with the server.
 	 * @param Vehicle $vehicle
+	 * @throws ReflectionException
 	 */
 	public function registerVehicle(Vehicle $vehicle){
 		Entity::registerEntity(get_class($vehicle), false);
-		$this->registeredTypes[$vehicle::getName()] = get_class($vehicle);
+		$this->registeredTypes[$vehicle::getName()] = (new ReflectionClass($vehicle))->getShortName();;
 		$this->plugin->getLogger()->debug("Registered Vehicle '".$vehicle::getName()."'");
 	}
 
@@ -98,7 +126,7 @@ class VehicleFactory
 	 * @return Vehicle
 	 */
 	public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicle{
-		if(!$this->isRegistered($type)) throw new \InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
+		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
 
 		$type = $this->findClass($type);
 		if($type === null){
@@ -107,7 +135,7 @@ class VehicleFactory
 		/** @var Vehicle|null $entity */
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
-			throw new InvalidArgumentException("Type '${$type}' is not a registered vehicle.");
+			throw new InvalidArgumentException("Type '${type}' is not a registered vehicle.");
 		}
 		$entity->spawnToAll();
 
