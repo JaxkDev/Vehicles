@@ -43,7 +43,7 @@ class CommandHandler
 	 * @param array $args
 	 */
 	function handleCommand(CommandSender $sender, array $args): void{
-		if($sender instanceof ConsoleCommandSender){
+		if(!$sender instanceof ConsoleCommandSender){
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
 			return;
 		}
@@ -55,7 +55,27 @@ class CommandHandler
 		array_shift($args);
 		switch($subCommand){
 			case 'help':
-				$sender->sendMessage($this->prefix.C::RED."Help coming soon.");
+				$sender->sendMessage($this->prefix.C::RED."-- HELP --");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles help");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles credits");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles version");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles spawn <type>");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles types");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles remove");
+				break;
+			case 'credits':
+			case 'creds':
+				$sender->sendMessage($this->prefix.C::GOLD."--- Credits ---");
+				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."Jackthehack21\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (kevinishawesome), 'Simule City' beta players.");
+				break;
+			case 'version':
+			case 'ver':
+				$sender->sendMessage($this->prefix.C::GOLD."Version: ".C::RED.$this->plugin->getDescription()->getVersion());
+				break;
+			case 'types':
+			case 'type':
+				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes()))."\n".$this->prefix.C::AQUA."Object Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -66,7 +86,7 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())).C::AQUA."\nObject Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes()))."\n".$this->prefix.C::AQUA."Object Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
 					return;
 				}
 				/** @var null|DisplayObject|Vehicle $entity */

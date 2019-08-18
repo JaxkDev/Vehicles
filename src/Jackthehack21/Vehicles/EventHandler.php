@@ -99,12 +99,14 @@ class EventHandler implements Listener
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
 				switch($command){
 					case 'remove':
-						if(!$entity->isEmpty()) {
-							$attacker->sendMessage($this->plugin->prefix.C::RED."You cannot remove a vehicle with players in it.");
-						}
-						else {
-							$entity->close();
-							$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
+						if($entity instanceof Vehicle){
+							if(!$entity->isEmpty()) {
+								$attacker->sendMessage($this->plugin->prefix.C::RED."You cannot remove a vehicle with players in it.");
+							}
+							else {
+								$entity->close();
+								$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
+							}
 						}
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
