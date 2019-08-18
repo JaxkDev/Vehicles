@@ -31,6 +31,7 @@ use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
+
 use LogicException;
 
 abstract class Vehicle extends Entity implements Rideable

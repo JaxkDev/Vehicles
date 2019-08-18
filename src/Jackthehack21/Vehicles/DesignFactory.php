@@ -60,10 +60,14 @@ class DesignFactory{
 					$this->designs[$design["name"]]->validate();
 				} catch (InvalidArgumentException $e){
 					unset($this->designs[$design["name"]]);
+					$this->plugin->getLogger()->debug($e);
 					$this->plugin->getLogger()->warning("'".$design["name"]."' has not got valid skin data, and so it has been disabled.");
 					continue;
 				}
 				$this->plugin->getLogger()->debug("Loaded '".$design["name"]."'");
+			}
+			if(count($designManifest) === 0){
+				$this->plugin->getLogger()->warning("No designs found in manifest, it is either invalid JSON or empty.");
 			}
 		}
 	}
@@ -89,12 +93,12 @@ class DesignFactory{
 	public function readDesignFile(string $path): ?string{
 		$type = pathinfo($path, PATHINFO_EXTENSION);
 		if($type === "png"){
-			if(file_exists(rtrim($path,"png")."json")){
+			/*if(file_exists(rtrim($path,"png")."json")){
 				$data = json_decode(file_get_contents($path));
 				$data = base64_decode($data->data);
 				$this->plugin->getLogger()->debug("Loaded design from generated json.");
 				return $data;
-			}
+			}*/
 			if (!extension_loaded("gd")) {
 				throw new PluginException("GD library is not enabled, to load designs it must be enabled. *See php.ini to enable it*");
 			}
@@ -111,7 +115,7 @@ class DesignFactory{
 				}
 			}
 			@imagedestroy($img);
-			file_put_contents(rtrim($path, "png") . "json", json_encode(["data" => base64_encode($bytes)]));
+			//file_put_contents(rtrim($path, "png") . "json", json_encode(["data" => base64_encode($bytes)]));
 			$this->plugin->getLogger()->debug("Saved design to json.");
 			return $bytes;
 		} elseif ($type === "json") {

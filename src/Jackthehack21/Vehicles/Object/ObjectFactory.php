@@ -94,7 +94,7 @@ class ObjectFactory
 			}
 			$this->registerObject($class);
 		}
-		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") vehicle(s)");
+		$this->plugin->getLogger()->info("Registered (".count($this->registeredTypes).") object(s)");
 	}
 
 	public function registerDefaultObjects(){

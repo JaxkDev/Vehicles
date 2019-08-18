@@ -75,7 +75,7 @@ class VehicleFactory
 		$scan = scandir($this->plugin->getDataFolder()."Vehicles/");
 		$dir = [];
 		foreach($scan as $file) {
-			if(pathinfo($this->plugin->getDataFolder()."Vehicles\\".$file, PATHINFO_EXTENSION) === "php") $dir[$this->plugin->getDataFolder()."Vehicles\\".$file] = rtrim($file,".php");
+			if(pathinfo($this->plugin->getDataFolder()."Vehicles/".$file, PATHINFO_EXTENSION) === "php") $dir[$this->plugin->getDataFolder()."Vehicles/".$file] = rtrim($file,".php");
 		}
 		foreach($dir as $path => $file){
 			if($this->isRegistered($file)){
