@@ -62,6 +62,7 @@ class CommandHandler
 			case 'new':
 				if(!$sender->hasPermission("vehicles.command.spawn")){
 					$sender->sendMessage($this->prefix.C::RED."You do not have permission to use that command.");
+					return;
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
@@ -88,6 +89,7 @@ class CommandHandler
 			case 'remove':
 				if(!$sender->hasPermission("vehicles.command.remove")){
 					$sender->sendMessage($this->prefix.C::RED."You do not have permission to use that command.");
+					return;
 				}
 				$this->plugin->interactCommands[strtolower($sender->getName())] = ["remove", [$args]];
 				$sender->sendMessage($this->prefix.C::GREEN."Tap the vehicle/object you wish to remove.");

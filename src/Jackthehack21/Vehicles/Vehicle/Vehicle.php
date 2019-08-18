@@ -126,7 +126,9 @@ abstract class Vehicle extends Entity implements Rideable
 	 * @return bool
 	 */
 	public function removePlayer(Player $player): bool{
-		if($this->driver->getUniqueId() === $player->getUniqueId()) return $this->removeDriver();
+		if($this->driver !== null){
+			if($this->driver->getUniqueId() === $player->getUniqueId()) return $this->removeDriver();
+		}
 		return $this->removePassengerByUUID($player->getUniqueId());
 	}
 
