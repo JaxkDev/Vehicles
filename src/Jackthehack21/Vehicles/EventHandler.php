@@ -108,6 +108,10 @@ class EventHandler implements Listener
 								$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
 							}
 						}
+						if($entity instanceof DisplayObject){
+							$entity->close();
+							$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
+						}
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
 					default:

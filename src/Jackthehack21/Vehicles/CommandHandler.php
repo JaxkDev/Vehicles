@@ -43,7 +43,7 @@ class CommandHandler
 	 * @param array $args
 	 */
 	function handleCommand(CommandSender $sender, array $args): void{
-		if(!$sender instanceof ConsoleCommandSender){
+		if($sender instanceof ConsoleCommandSender){
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
 			return;
 		}
