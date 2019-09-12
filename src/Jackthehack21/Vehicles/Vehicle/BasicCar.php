@@ -78,7 +78,7 @@ class BasicCar extends Vehicle {
 			$this->yaw = $this->driver->getYaw();// - turn based on players rotation
 		} elseif ($y < 0){
 			//reverse
-			$this->motion = $this->getDirectionVector()->multiply($y*2.5);
+			$this->motion = $this->getDirectionVector()->multiply($y*-1.5);
 		}
 	}
 }
