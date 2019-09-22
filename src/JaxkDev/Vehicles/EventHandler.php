@@ -3,16 +3,16 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 Jackthehack21 (Jackthehaxk21/JaxkDev)
+ * Copyright (C) 2019 JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: Jackthehaxk21#8860
- * Email   :: gangnam253@gmail.com
+ * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles;
+namespace JaxkDev\Vehicles;
 
 use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -21,8 +21,8 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
-use Jackthehack21\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
-use Jackthehack21\Vehicles\Object\DisplayObject;
+use JaxkDev\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
+use JaxkDev\Vehicles\Object\DisplayObject;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;

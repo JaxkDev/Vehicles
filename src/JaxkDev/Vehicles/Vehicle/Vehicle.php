@@ -3,18 +3,19 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 Jackthehack21 (Jackthehaxk21/JaxkDev)
+ * Copyright (C) 2019 JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: Jackthehaxk21#8860
- * Email   :: gangnam253@gmail.com
+ * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles\Vehicle;
+namespace JaxkDev\Vehicles\Vehicle;
 
-use Jackthehack21\Vehicles\Main;
+use JaxkDev\Vehicles\Main;
+use pocketmine\item\ItemFactory;
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
@@ -201,6 +202,8 @@ abstract class Vehicle extends Entity implements Rideable
 	 * @return bool
 	 */
 	public function setDriver(Player $player): bool{
+		//TODO Locks.
+		$player->getInventory()->setItem(0, ItemFactory::get(250));
 		if($this->driver !== null){
 			if($this->driver->getUniqueId() === $player->getUniqueId()){
 				$player->sendMessage(C::RED."You are already driving this vehicle.");
@@ -266,7 +269,7 @@ abstract class Vehicle extends Entity implements Rideable
 		$skin = $obj->getDesign();
 		$skin->validate(); //Leave it to throw the exception as it should not be invalid this far in.
 
-		//Below adds the entity ID + skin to the list to be used in the AddPlayerPacket (WITHOUT THIS DEFAULT SKIN WILL BE USED).
+		//Below adds the entity ID + skin to the list to be used in the AddPlayerPacket (WITHOUT THIS DEFAULT/NO SKIN WILL BE USED).
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 		$pk->entries[] = PlayerListEntry::createAdditionEntry($obj->uuid, $obj->id, $obj::getName(), $obj::getDesign());;

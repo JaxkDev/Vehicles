@@ -3,27 +3,27 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 Jackthehack21 (Jackthehaxk21/JaxkDev)
+ * Copyright (C) 2019 JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: Jackthehaxk21#8860
- * Email   :: gangnam253@gmail.com
+ * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles;
+namespace JaxkDev\Vehicles;
 
-use Jackthehack21\Vehicles\Object\DisplayObject;
-use Jackthehack21\Vehicles\Vehicle\Vehicle;
+use JaxkDev\Vehicles\Object\DisplayObject;
+use JaxkDev\Vehicles\Vehicle\Vehicle;
 use pocketmine\utils\Config;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
-use Jackthehack21\Vehicles\Object\ObjectFactory;
-use Jackthehack21\Vehicles\Vehicle\VehicleFactory;
+use JaxkDev\Vehicles\Object\ObjectFactory;
+use JaxkDev\Vehicles\Vehicle\VehicleFactory;
 
 class Main extends PluginBase
 {

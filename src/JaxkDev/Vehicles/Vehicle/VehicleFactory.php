@@ -3,21 +3,21 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 Jackthehack21 (Jackthehaxk21/JaxkDev)
+ * Copyright (C) 2019 JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: Jackthehaxk21#8860
- * Email   :: gangnam253@gmail.com
+ * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles\Vehicle;
+namespace JaxkDev\Vehicles\Vehicle;
 
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
-use Jackthehack21\Vehicles\Main;
+use JaxkDev\Vehicles\Main;
 
 use reflectionClass;
 use ReflectionException;
@@ -84,7 +84,7 @@ class VehicleFactory
 			}
 			/** @noinspection PhpIncludeInspection */
 			require $path;
-			$className = "Jackthehack21\\Vehicles\\External\\".$file;
+			$className = "JaxkDev\\Vehicles\\External\\".$file;
 			$rc = new reflectionClass($className);
 			/** @var Vehicle $class */
 			$class = $rc->newInstanceWithoutConstructor();

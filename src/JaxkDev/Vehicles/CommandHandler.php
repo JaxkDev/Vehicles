@@ -3,22 +3,22 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 Jackthehack21 (Jackthehaxk21/JaxkDev)
+ * Copyright (C) 2019 JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: Jackthehaxk21#8860
- * Email   :: gangnam253@gmail.com
+ * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace Jackthehack21\Vehicles;
+namespace JaxkDev\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\command\CommandSender;
-use Jackthehack21\Vehicles\Vehicle\Vehicle;
+use JaxkDev\Vehicles\Vehicle\Vehicle;
 use pocketmine\command\ConsoleCommandSender;
-use Jackthehack21\Vehicles\Object\DisplayObject;
+use JaxkDev\Vehicles\Object\DisplayObject;
 
 use pocketmine\utils\TextFormat as C;
 
@@ -66,7 +66,7 @@ class CommandHandler
 			case 'credits':
 			case 'creds':
 				$sender->sendMessage($this->prefix.C::GOLD."--- Credits ---");
-				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."Jackthehack21\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (kevinishawesome), 'Simule City' beta players.");
+				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."JaxkDev\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (kevinishawesome), 'Simule City' beta players.");
 				break;
 			case 'version':
 			case 'ver':
