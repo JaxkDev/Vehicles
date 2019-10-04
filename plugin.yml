@@ -34,7 +34,19 @@ permissions:
           vehicles.command.remove:
             description: "Allows user to remove a vehicle/object."
             default: op
+          vehicles.command.lock:
+            description: "Allows user to lock their vehicles."
+            default: true
+          vehicles.command.unlock:
+            description: "Allows user to unlock their vehicles."
+            default: true
+          vehicles.command.giveaway:
+            description: "Allows user to giveaway their vehicles (lose ownership)."
+            default: true
 
       vehicles.drive:
-        description: "Allows user to drive a vehicle."
+        description: "Allows user to drive their vehicle or a unlocked one."
+        default: true
+      vehicles.passenger:
+        description: "Allows user to be a passenger in any vehicle unlocked."
         default: true

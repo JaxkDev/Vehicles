@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Vehicle;
 
 use JaxkDev\Vehicles\Main;
-use pocketmine\item\ItemFactory;
+
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
@@ -42,6 +42,9 @@ abstract class Vehicle extends Entity implements Rideable
 	protected $gravity = 1; //todo find best value. (remember not to make negative...)
 	protected $drag = 0.5;
 
+	/** @var null|UUID */
+	protected $owner = null;
+
 	/** @var null|Player */
 	protected $driver = null;
 
@@ -53,6 +56,9 @@ abstract class Vehicle extends Entity implements Rideable
 
 	/** @var Vector3[] */
 	protected $passengerPositions = [];
+
+	/** @var bool */
+	protected $locked = false;   //Todo think about moving to 'status'
 
 	/** @var UUID Used for spawning and handling in terms of reference to the entity*/
 	protected $uuid;
@@ -73,7 +79,20 @@ abstract class Vehicle extends Entity implements Rideable
 
 		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
 		$this->setNameTagAlwaysVisible($this->plugin->cfg["vehicles"]["show-nametags"]);
+		$owner = $this->namedtag->getString("ownerUUID", "NA");
+		//$this->plugin->getLogger()->debug("ownerUUID: ".$owner);
+		if($owner !== "NA"){
+			$this->owner = UUID::fromString($owner);
+		}
+		$locked = $this->namedtag->getByte("locked", 0);
+		//$this->plugin->getLogger()->debug("locked: ".($locked === 0 ? "un-locked" : "locked"));
+		if($locked === 1) $this->locked = true;
+		if($this->owner === null){
+			$this->locked = false;
+			$this->updateNBT();
+		}
 		$this->setCanSaveWithChunk(true);
+		$this->saveNBT();
 	}
 
 	public function getDriverSeatPosition() : ?Vector3{
@@ -128,7 +147,7 @@ abstract class Vehicle extends Entity implements Rideable
 	 */
 	public function removePlayer(Player $player): bool{
 		if($this->driver !== null){
-			if($this->driver->getUniqueId() === $player->getUniqueId()) return $this->removeDriver();
+			if($this->driver->getUniqueId()->equals($player->getUniqueId())) return $this->removeDriver();
 		}
 		return $this->removePassengerByUUID($player->getUniqueId());
 	}
@@ -180,6 +199,10 @@ abstract class Vehicle extends Entity implements Rideable
 	}
 
 	public function setPassenger(Player $player, ?int $seat = null): bool{
+		if($this->isLocked() && !$player->getUniqueId()->equals($this->getOwner())){
+			$player->sendMessage(C::RED."This vehicle is locked.");
+			return false;
+		}
 		if($seat !== null){
 			if(isset($this->passengers[$seat])) return false;
 		} else {
@@ -202,10 +225,12 @@ abstract class Vehicle extends Entity implements Rideable
 	 * @return bool
 	 */
 	public function setDriver(Player $player): bool{
-		//TODO Locks.
-		$player->getInventory()->setItem(0, ItemFactory::get(250));
+		if($this->isLocked() && !$player->getUniqueId()->equals($this->getOwner())){
+			$player->sendMessage(C::RED."This vehicle is locked, you must be the owner to enter.");
+			return false;
+		}
 		if($this->driver !== null){
-			if($this->driver->getUniqueId() === $player->getUniqueId()){
+			if($this->driver->getUniqueId()->equals($player->getUniqueId())){
 				$player->sendMessage(C::RED."You are already driving this vehicle.");
 				return false;
 			}
@@ -224,6 +249,11 @@ abstract class Vehicle extends Entity implements Rideable
 		$player->sendMessage(C::GREEN."You are now driving this vehicle.");
 		$this->broadcastLink($this->driver);
 		$player->sendPopup(C::GREEN."Sneak/Jump to leave the vehicle.", "[Vehicles]");
+
+		if($this->owner === null){
+			$this->setOwner($player);
+			$player->sendMessage(C::GREEN."You have claimed this vehicle, you are now its owner.");
+		}
 		return true;
 	}
 
@@ -241,6 +271,49 @@ abstract class Vehicle extends Entity implements Rideable
 	 */
 	public function hasDriver(): bool{
 		return $this->driver !== null;
+	}
+
+	/**
+	 * Check if vehicle is locked.
+	 * @return bool
+	 */
+	public function isLocked(): bool{
+		return $this->locked;
+	}
+
+	/**
+	 * Set the vehicle as locked/unlocked.
+	 * @param bool $var
+	 */
+	public function setLocked(bool $var): void{
+		$this->locked = $var;
+		$this->namedtag->setByte("locked", $var ? 1 : 0);
+		$this->saveNBT();
+	}
+
+	/**
+	 * Get the vehicles owner.
+	 * @return UUID|null
+	 */
+	public function getOwner(): ?UUID{
+		return $this->owner;
+	}
+
+	public function setOwner(Player $player): void{
+		$this->owner = $player->getUniqueId();
+		$this->updateNBT();
+	}
+
+	public function removeOwner(): void{
+		$this->owner = null;
+		$this->locked = false; //Cant be locked and no owner, causes endless loop.
+		$this->updateNBT();
+	}
+
+	public function updateNBT(): void{
+		$this->namedtag->setString("ownerUUID", $this->owner !== null ? $this->owner->toString() : "NA");
+		$this->namedtag->setByte("locked", $this->locked ? 1 : 0);
+		$this->saveNBT();
 	}
 
 	public function isFireProof(): bool

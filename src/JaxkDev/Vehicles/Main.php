@@ -14,14 +14,13 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use JaxkDev\Vehicles\Object\DisplayObject;
-use JaxkDev\Vehicles\Vehicle\Vehicle;
 use pocketmine\utils\Config;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
+use JaxkDev\Vehicles\Vehicle\Vehicle;
 use JaxkDev\Vehicles\Object\ObjectFactory;
 use JaxkDev\Vehicles\Vehicle\VehicleFactory;
 
@@ -30,7 +29,7 @@ class Main extends PluginBase
 
 	private static $instance;
 
-	/** @var String|Vehicle[]|DisplayObject[] */
+	/** @var String|Vehicle[] */
 	public static $inVehicle = [];
 
 	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;

@@ -98,6 +98,64 @@ class EventHandler implements Listener
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
 				switch($command){
+					case 'lock':
+						if($entity instanceof Vehicle){
+							if($entity->getOwner() === null){
+								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							if($attacker->getUniqueId()->equals($entity->getOwner())){
+								if($entity->isLocked()){
+									$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle is already locked.");
+									unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+									break;
+								}
+								$entity->setLocked(true);
+								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been locked, no one may drive/get in the vehicle.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
+						}
+						break;
+					case 'un-lock':
+						if($entity instanceof Vehicle){
+							if($entity->getOwner() === null){
+								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							if($attacker->getUniqueId()->equals($entity->getOwner())){
+								if(!$entity->isLocked()){
+									$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle is already un-locked.");
+									unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+									break;
+								}
+								$entity->setLocked(false);
+								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been un-locked, anyone may now drive/get in the vehicle.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
+						}
+						break;
+					case 'giveaway':
+						if($entity instanceof Vehicle){
+							if($entity->getOwner() === null){
+								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							if($attacker->getUniqueId()->equals($entity->getOwner())){
+								$entity->removeOwner();
+								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been given away, next person to drive it will become owner.");
+								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
+								break;
+							}
+							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
+						}
+						break;
 					case 'remove':
 						if($entity instanceof Vehicle){
 							if(!$entity->isEmpty()) {
@@ -147,7 +205,7 @@ class EventHandler implements Listener
 			/** @var Vehicle $vehicle */
 			$vehicle = Main::$inVehicle[$player->getRawUniqueId()];
 			if($vehicle->getDriver() === null) return;
-			if($vehicle->getDriver()->getUniqueId() === $player->getUniqueId()) $vehicle->updateMotion($packet->motionX, $packet->motionY);
+			if($vehicle->getDriver()->getUniqueId()->equals($player->getUniqueId())) $vehicle->updateMotion($packet->motionX, $packet->motionY);
 		}
 	}
 
