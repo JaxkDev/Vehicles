@@ -68,7 +68,7 @@ class CommandHandler
 			case 'credits':
 			case 'creds':
 				$sender->sendMessage($this->prefix.C::GOLD."--- Credits ---");
-				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."JaxkDev\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (kevinishawesome), 'Simule City' beta players.");
+				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."JaxkDev\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (@kevinishawesome), 'Simule City' beta players.");
 				break;
 			case 'version':
 			case 'ver':
@@ -98,6 +98,9 @@ class CommandHandler
 				}
 				elseif($this->plugin->objectFactory->isRegistered($args[0])){
 					$entity = $this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3());
+					$entity->setRotation($sender->getYaw(), $sender->getPitch());
+					var_dump($entity->getYaw());
+					var_dump($sender->getYaw());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");

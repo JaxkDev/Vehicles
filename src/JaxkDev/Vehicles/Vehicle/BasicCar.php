@@ -23,7 +23,7 @@ use pocketmine\Player;
 
 class BasicCar extends Vehicle {
 	public $width = 3; //rough, probably no where near.
-	public $height = 2;
+	public $height = 1.5;
 
 	protected $baseOffset = 1.615;
 
@@ -78,7 +78,7 @@ class BasicCar extends Vehicle {
 			$this->yaw = $this->driver->getYaw();// - turn based on players rotation
 		} elseif ($y < 0){
 			//reverse
-			$this->motion = $this->getDirectionVector()->multiply($y*-1.5);
+			$this->motion = $this->getDirectionVector()->multiply($y*1.5);
 		}
 	}
 }

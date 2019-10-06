@@ -71,6 +71,10 @@ class ObjectFactory
 		return null;
 	}
 
+	/**
+	 * Look here and become scarred.
+	 * @throws ReflectionException
+	 */
 	public function registerExternalObjects(){
 		$scan = scandir($this->plugin->getDataFolder()."Objects/");
 		$dir = [];
@@ -132,7 +136,7 @@ class ObjectFactory
 	 * @return DisplayObject
 	 */
 	public function spawnObject(string $type, Level $level, Vector3 $pos): DisplayObject{
-		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
+		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered object.");
 
 		$type = $this->findClass($type);
 		if($type === null){
@@ -142,7 +146,7 @@ class ObjectFactory
 		/** @var DisplayObject|null $entity */
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
-			throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
+			throw new InvalidArgumentException("Type \"${$type} is not a registered object.");
 		}
 		$entity->spawnToAll();
 
