@@ -15,4 +15,5 @@ _Vehicles default :_
 This is a experimental plugin and is not for performance and 100% not the best way to do such plugin but this is great experience for myself.
 
 # License:
-*ALL* Resources (Including models used) and code provided is licensed under the Open Software License ("OSL") v. 3.0
+Code provided is licensed under the Open Software License ("OSL") v. 3.0
+The default resource's license can be found in the resources folder.
