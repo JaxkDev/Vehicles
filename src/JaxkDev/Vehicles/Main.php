@@ -65,8 +65,9 @@ class Main extends PluginBase
 
 		//Save defaults here.
 		$this->saveConfig();
-		$this->saveResource("Objects/README.md");
-		$this->saveResource("Vehicles/README.md");
+		$this->saveResource("Objects/README.md", true);
+		$this->saveResource("Vehicles/README.md", true);
+		$this->saveResource("Vehicles/BLANK.php", true);
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);

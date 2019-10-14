@@ -78,6 +78,7 @@ class VehicleFactory
 			if(pathinfo($this->plugin->getDataFolder()."Vehicles/".$file, PATHINFO_EXTENSION) === "php") $dir[$this->plugin->getDataFolder()."Vehicles/".$file] = rtrim($file,".php");
 		}
 		foreach($dir as $path => $file){
+			if($file === "BLANK") continue;
 			if($this->isRegistered($file)){
 				$this->plugin->getLogger()->warning("External vehicle '".$file."' already exists.");
 				continue;
