@@ -23,7 +23,7 @@ use pocketmine\Player;
 
 class BasicCar extends Vehicle {
 	public $width = 3; //rough, probably no where near.
-	public $height = 1.5;
+	public $height = 2;
 
 	protected $baseOffset = 1.615;
 

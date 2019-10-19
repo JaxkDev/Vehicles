@@ -248,7 +248,7 @@ abstract class Vehicle extends Entity implements Rideable
 		Main::$inVehicle[$this->driver->getRawUniqueId()] = $this;
 		$player->sendMessage(C::GREEN."You are now driving this vehicle.");
 		$this->broadcastLink($this->driver);
-		$player->sendPopup(C::GREEN."Sneak/Jump to leave the vehicle.", "[Vehicles]");
+		$player->sendTip(C::GREEN."Sneak/Jump to leave the vehicle.");
 
 		if($this->owner === null){
 			$this->setOwner($player);

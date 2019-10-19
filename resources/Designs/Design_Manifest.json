@@ -1,26 +1,5 @@
 [
   {
-    "name": "Traffic-Cone",
-    "designId": "97c95d16-1314-4da6-ab52-db97944a4490",
-    "designFile": "TrafficCone.json",
-    "geometryName": "geometry.TrafficCone.1",
-    "geometryFile": "TrafficCone_Geometry.json"
-  },
-  {
-    "name": "Stop-Sign",
-    "designId": "c5324ac2-032b-405e-b49d-0d38b5728ec1",
-    "designFile": "StopSign.json",
-    "geometryName": "geometry.StopSign.11",
-    "geometryFile": "StopSign_Geometry.json"
-  },
-  {
-    "name": "No-Entry-Sign",
-    "designId": "3285fb91-0e21-473f-b682-778a140be4b2",
-    "designFile": "NoEntrySign.json",
-    "geometryName": "geometry.NoEntrySign.1",
-    "geometryFile": "NoEntrySign_Geometry.json"
-  },
-  {
     "name": "Basic-Car",
     "designId": "73192065-b069-4e15-897a-b6af73dbb5bd",
     "designFile": "BasicCar.json",

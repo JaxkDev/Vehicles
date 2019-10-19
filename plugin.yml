@@ -5,7 +5,7 @@ api: [3.9.0]
 mcpe-protocol: [361]
 main: JaxkDev\Vehicles\Main
 website: "https://github.com/JaxkDev/Vehicles"
-description: "[W.I.P | Pre-Release] PocketMine-MP plugin that brings vehicles and other objects to your server !"
+description: "[W.I.P] PocketMine-MP plugin that brings vehicles to your server !"
 
 commands:
   vehicles:
@@ -29,10 +29,10 @@ permissions:
             description: "Allows user to use commands."
             default: true
           vehicles.command.spawn:
-            description: "Allows user to spawn a vehicle/object."
+            description: "Allows user to spawn a vehicle."
             default: op
           vehicles.command.remove:
-            description: "Allows user to remove a vehicle/object."
+            description: "Allows user to remove a vehicle."
             default: op
           vehicles.command.lock:
             description: "Allows user to lock their vehicles."

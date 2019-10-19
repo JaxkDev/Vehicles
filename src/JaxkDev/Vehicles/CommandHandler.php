@@ -16,9 +16,9 @@ namespace JaxkDev\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\command\CommandSender;
-use JaxkDev\Vehicles\Vehicle\Vehicle;
 use pocketmine\command\ConsoleCommandSender;
-use JaxkDev\Vehicles\Object\DisplayObject;
+
+use JaxkDev\Vehicles\Vehicle\Vehicle;
 
 use pocketmine\utils\TextFormat as C;
 
@@ -77,7 +77,7 @@ class CommandHandler
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
-				$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes()))."\n".$this->prefix.C::AQUA."Object Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -88,19 +88,13 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicle Types Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes()))."\n".$this->prefix.C::AQUA."Object Types Available:\n- ".join("\n- ", array_keys($this->plugin->objectFactory->getTypes())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
 					return;
 				}
-				/** @var null|DisplayObject|Vehicle $entity */
+				/** @var null|Vehicle $entity */
 				$entity = null;
 				if($this->plugin->vehicleFactory->isRegistered($args[0])){
 					$entity = $this->plugin->vehicleFactory->spawnVehicle($args[0],$sender->getLevel(), $sender->asVector3());
-				}
-				elseif($this->plugin->objectFactory->isRegistered($args[0])){
-					$entity = $this->plugin->objectFactory->spawnObject($args[0], $sender->getLevel(), $sender->asVector3());
-					$entity->setRotation($sender->getYaw(), $sender->getPitch());
-					var_dump($entity->getYaw());
-					var_dump($sender->getYaw());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");

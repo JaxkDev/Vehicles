@@ -21,7 +21,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
 use JaxkDev\Vehicles\Vehicle\Vehicle;
-use JaxkDev\Vehicles\Object\ObjectFactory;
 use JaxkDev\Vehicles\Vehicle\VehicleFactory;
 
 class Main extends PluginBase
@@ -43,9 +42,6 @@ class Main extends PluginBase
 	/** @var VehicleFactory */
 	public $vehicleFactory;
 
-	/** @var ObjectFactory */
-	public $objectFactory;
-
 	/** @var DesignFactory */
 	public $designFactory;
 
@@ -65,14 +61,12 @@ class Main extends PluginBase
 
 		//Save defaults here.
 		$this->saveConfig();
-		$this->saveResource("Objects/README.md", true);
 		$this->saveResource("Vehicles/README.md", true);
 		$this->saveResource("Vehicles/BLANK.php", true);
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
 		$this->vehicleFactory = new VehicleFactory($this);
-		$this->objectFactory = new ObjectFactory($this);
 		$this->designFactory = new DesignFactory($this);
 		$this->eventHandler = new EventHandler($this);
 
@@ -88,12 +82,6 @@ class Main extends PluginBase
 
 	public function onEnable()
 	{
-		$this->getLogger()->debug("Registering default objects...");
-		$this->objectFactory->registerDefaultObjects();
-		$this->getLogger()->debug("Registering external objects...");
-		$this->objectFactory->registerExternalObjects();
-		$this->getLogger()->debug("That's all done now.");
-
 		$this->getLogger()->debug("Registering default vehicles...");
 		$this->vehicleFactory->registerDefaultVehicles();
 		$this->getLogger()->debug("Registering external vehicles...");

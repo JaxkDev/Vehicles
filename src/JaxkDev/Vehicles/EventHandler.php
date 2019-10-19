@@ -21,13 +21,12 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
-use JaxkDev\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
-use JaxkDev\Vehicles\Object\DisplayObject;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+use JaxkDev\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
 
 class EventHandler implements Listener
 {
@@ -87,12 +86,12 @@ class EventHandler implements Listener
 	 * Some interruption by MultiWorld
 	 */
 	public function onEntityDamageEvent(EntityDamageByEntityEvent $event){
-		if($event->getEntity() instanceof DisplayObject or $event->getEntity() instanceof Vehicle){
+		if($event->getEntity() instanceof Vehicle){
 			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
 			if(!($event->getDamager() instanceof Player)) return;
 			/** @var Player $attacker */
 			$attacker = $event->getDamager();
-			/** @var Vehicle|DisplayObject $entity */
+			/** @var Vehicle $entity */
 			$entity = $event->getEntity();
 			if(($index = array_search(strtolower($attacker->getName()),array_keys($this->plugin->interactCommands))) !== false){
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
@@ -165,10 +164,6 @@ class EventHandler implements Listener
 								$entity->close();
 								$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
 							}
-						}
-						if($entity instanceof DisplayObject){
-							$entity->close();
-							$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
 						}
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
