@@ -111,7 +111,7 @@ class CommandHandler
 					return;
 				}
 				$this->plugin->interactCommands[strtolower($sender->getName())] = ["remove", [$args]];
-				$sender->sendMessage($this->prefix.C::GREEN."Tap the vehicle/object you wish to remove.");
+				$sender->sendMessage($this->prefix.C::GREEN."Tap the vehicle you wish to remove.");
 				break;
 			case 'lock':
 				//No one is allowed in.

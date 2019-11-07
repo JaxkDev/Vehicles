@@ -1,6 +1,6 @@
 name: Vehicles
 author: JaxkDev
-version: 0.0.3
+version: 0.0.4
 api: [3.9.0]
 mcpe-protocol: [361]
 main: JaxkDev\Vehicles\Main

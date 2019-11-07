@@ -62,7 +62,6 @@ class Main extends PluginBase
 		//Save defaults here.
 		$this->saveConfig();
 		$this->saveResource("Vehicles/README.md", true);
-		$this->saveResource("Vehicles/BLANK.php", true);
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
@@ -84,8 +83,8 @@ class Main extends PluginBase
 	{
 		$this->getLogger()->debug("Registering default vehicles...");
 		$this->vehicleFactory->registerDefaultVehicles();
-		$this->getLogger()->debug("Registering external vehicles...");
-		$this->vehicleFactory->registerExternalVehicles();
+		/*$this->getLogger()->debug("Registering external vehicles...");
+		$this->vehicleFactory->registerExternalVehicles();*/
 		$this->getLogger()->debug("That's all done now.");
 
 		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);
