@@ -15,11 +15,12 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Vehicle;
 
 use JaxkDev\Vehicles\Main;
-use pocketmine\entity\Skin;
+
+use pocketmine\Player;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\level\Level;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\SkinData;
 
 class BasicCar extends Vehicle {
 	public $width = 3; //rough, probably no where near.
@@ -46,7 +47,7 @@ class BasicCar extends Vehicle {
 		return "Basic-Car";
 	}
 
-	static function getDesign(): Skin
+	static function getDesign(): SkinData
 	{
 		return Main::getInstance()->designFactory->getDesign(self::getName());
 	}

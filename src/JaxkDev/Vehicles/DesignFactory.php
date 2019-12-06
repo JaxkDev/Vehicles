@@ -18,7 +18,9 @@ use Exception;
 use InvalidArgumentException;
 
 use pocketmine\entity\Skin;
+use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\plugin\PluginException;
+use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
 
 class DesignFactory{
 	private static $instance;
@@ -64,6 +66,10 @@ class DesignFactory{
 					$this->plugin->getLogger()->warning("'".$design["name"]."' has not got valid skin data, and so it has been disabled.");
 					continue;
 				}
+
+				//1.13.0 change SkinData:
+				$this->designs[$design["name"]] = SkinAdapterSingleton::get()->toSkinData($this->designs[$design["name"]]);
+
 				$this->plugin->getLogger()->debug("Loaded '".$design["name"]."'");
 			}
 			if(count($designManifest) === 0){
@@ -75,9 +81,9 @@ class DesignFactory{
 	/**
 	 * Retrieve the Design for a vehicle.
 	 * @param string $name
-	 * @return Skin|null
+	 * @return SkinData|null
 	 */
-	public function getDesign(string $name): ?Skin{
+	public function getDesign(string $name): ?SkinData{
 		foreach($this->designs as $designName => $design){
 			if(strtolower($name) === strtolower($designName)) return $design;
 		}

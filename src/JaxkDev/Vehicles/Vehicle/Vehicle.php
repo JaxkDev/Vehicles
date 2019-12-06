@@ -20,13 +20,13 @@ use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
 use pocketmine\level\Level;
-use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Rideable;
 use pocketmine\entity\EntityIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
@@ -128,9 +128,9 @@ abstract class Vehicle extends Entity implements Rideable
 
 	/**
 	 * Returns the Design of the vehicle.
-	 * @return Skin|null
+	 * @return SkinData|null
 	 */
-	abstract static function getDesign(): ?Skin;
+	abstract static function getDesign(): ?SkinData;
 
 	/**
 	 * Handle player input.
@@ -340,12 +340,11 @@ abstract class Vehicle extends Entity implements Rideable
 
 	protected function sendInitPacket(Player $player, Vehicle $obj) : void{
 		$skin = $obj->getDesign();
-		$skin->validate(); //Leave it to throw the exception as it should not be invalid this far in.
 
 		//Below adds the entity ID + skin to the list to be used in the AddPlayerPacket (WITHOUT THIS DEFAULT/NO SKIN WILL BE USED).
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
-		$pk->entries[] = PlayerListEntry::createAdditionEntry($obj->uuid, $obj->id, $obj::getName(), $obj::getDesign());;
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($obj->uuid, $obj->id, $obj::getName(), $skin);;
 		$player->sendDataPacket($pk);
 
 		//Below adds the actual entity and puts the pieces together.
