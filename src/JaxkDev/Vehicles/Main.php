@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -25,7 +25,6 @@ use JaxkDev\Vehicles\Vehicle\VehicleFactory;
 
 class Main extends PluginBase
 {
-
 	private static $instance;
 
 	/** @var String|Vehicle[] */
@@ -61,7 +60,6 @@ class Main extends PluginBase
 
 		//Save defaults here.
 		$this->saveConfig();
-		$this->saveResource("Vehicles/README.md", true);
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
@@ -76,7 +74,7 @@ class Main extends PluginBase
 		$this->cfg = $this->cfgObject->getAll();
 		$this->getLogger()->debug("Loaded Config file, Version: {$this->cfg["version"]}");
 
-		$this->getLogger()->debug("Resources now loaded !");
+		$this->getLogger()->debug("Loaded all resources !");
 	}
 
 	public function onEnable()
