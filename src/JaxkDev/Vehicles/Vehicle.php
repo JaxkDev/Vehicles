@@ -3,16 +3,16 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles\Vehicle;
+namespace JaxkDev\Vehicles;
 
 use JaxkDev\Vehicles\Main;
 
@@ -35,9 +35,9 @@ use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 
 use LogicException;
 
-abstract class Vehicle extends Entity implements Rideable
+final class Vehicle extends Entity implements Rideable
 {
-	public const NETWORK_ID = EntityIds::HORSE;
+	public const NETWORK_ID = EntityIds::PLAYER;
 
 	protected $gravity = 1; //todo find best value. (remember not to make negative...)
 	protected $drag = 0.5;
@@ -121,23 +121,22 @@ abstract class Vehicle extends Entity implements Rideable
 	}
 
 	/**
-	 * Should return the vehicle name shown in-game.
-	 * @return string
-	 */
-	abstract static function getName(): string;
-
-	/**
 	 * Returns the Design of the vehicle.
 	 * @return SkinData|null
 	 */
-	abstract static function getDesign(): ?SkinData;
+	function getDesign(): ?SkinData{
+		//todo
+		return null;
+	}
 
 	/**
 	 * Handle player input.
 	 * @param float $x
 	 * @param float $y
 	 */
-	abstract function updateMotion(float $x, float $y): void;
+	function updateMotion(float $x, float $y): void{
+		//todo (nbt)
+	}
 
 
 	/**

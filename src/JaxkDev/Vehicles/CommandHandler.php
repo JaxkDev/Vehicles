@@ -94,10 +94,8 @@ class CommandHandler
 					$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
 					return;
 				}
-				/** @var null|Vehicle $entity */
-				$entity = null;
 				if($this->plugin->vehicleFactory->isRegistered($args[0])){
-					$entity = $this->plugin->vehicleFactory->spawnVehicle($args[0],$sender->getLevel(), $sender->asVector3());
+					$this->plugin->vehicleFactory->spawnVehicle($args[0],$sender->getLevel(), $sender->asVector3());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");
