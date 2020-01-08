@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -39,6 +39,8 @@ class DesignFactory{
 	
 	public function loadAll(): void{
 		$this->plugin->saveResource("Designs/Design_Manifest.json");
+		
+		//TODO Part of new custom system.
 
 		if(file_exists($this->plugin->getDataFolder()."Designs/Design_Manifest.json")){
 			$designManifest = json_decode(file_get_contents($this->plugin->getDataFolder()."Designs/Design_Manifest.json"), true) ?? [];
@@ -91,7 +93,7 @@ class DesignFactory{
 	}
 
 	/**
-	 * Return the RGBA Byte array ready for use from a UV Map (png)
+	 * Return the RGBA Byte array ready for use from a UV Map (png/json)
 	 * @param string $path
 	 * @return string|null RGBA Bytes to use.
 	 * @throws Exception
@@ -106,7 +108,7 @@ class DesignFactory{
 				return $data;
 			}*/
 			if (!extension_loaded("gd")) {
-				throw new PluginException("GD library is not enabled, to load designs it must be enabled. *See php.ini to enable it*");
+				throw new PluginException("GD library is not enabled, to load png designs it must be enabled. *See php.ini to enable it*");
 			}
 			$img = @imagecreatefrompng($path);
 			$bytes = '';
