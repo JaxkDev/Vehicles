@@ -1,9 +1,6 @@
 [
   {
-    "name": "Basic-Car",
-    "designId": "73192065-b069-4e15-897a-b6af73dbb5bd",
-    "designFile": "BasicCar.json",
-    "geometryName": "geometry.BasicCar.3",
-    "geometryFile": "BasicCar_Geometry.json"
+    "name": "BasicCar",
+    "designId": "73192065-b069-4e15-897a-b6af73dbb5bd"
   }
 ]
