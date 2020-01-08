@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -168,7 +168,7 @@ class EventHandler implements Listener
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
 					default:
-						$this->plugin->getLogger()->warning("Unknown interact command '{$command}'");
+						$this->plugin->getLogger()->error("Unknown interact command '{$command}'");
 				}
 			} else {
 				if($entity instanceof Vehicle) {
