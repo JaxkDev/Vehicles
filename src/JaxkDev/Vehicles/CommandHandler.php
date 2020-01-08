@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -16,11 +16,10 @@ namespace JaxkDev\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\command\CommandSender;
+use pocketmine\utils\TextFormat as C;
 use pocketmine\command\ConsoleCommandSender;
 
 use JaxkDev\Vehicles\Vehicle\Vehicle;
-
-use pocketmine\utils\TextFormat as C;
 
 class CommandHandler
 {
@@ -35,9 +34,12 @@ class CommandHandler
 		$this->plugin = $plugin;
 		$this->prefix = $this->plugin->prefix;
 	}
+	
+	//TODO part of rewrite for handling nbt+id's
 
 	/**
-	 * @internal Used directly from pmmp, no other plugins should be passing commands here (if really needed, dispatch command from server).
+	 * @internal 
+	 * Used directly from pmmp, no other plugins should be passing commands here (if really needed, dispatch command from server).
 	 *
 	 * @param CommandSender|Player $sender
 	 * @param array $args
@@ -60,7 +62,7 @@ class CommandHandler
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles credits");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles version");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles spawn [type]");
-				$sender->sendMessage($this->prefix.C::GOLD."/vehicles types");
+				$sender->sendMessage($this->prefix.C::GOLD."/vehicles types/list");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles remove");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles lock/unlock");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles giveaway");
@@ -74,6 +76,7 @@ class CommandHandler
 			case 'ver':
 				$sender->sendMessage($this->prefix.C::GOLD."Version: ".C::RED.$this->plugin->getDescription()->getVersion());
 				break;
+			case 'list':
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
