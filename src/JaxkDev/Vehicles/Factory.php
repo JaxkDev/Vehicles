@@ -43,6 +43,11 @@ class Factory{
 	 * @return Vehicle
 	 */
 	/*public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicle{
+	
+		
+		Todo: completely rewrite the shit out of this.
+	
+	
 		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
 
 		$type = $this->findClass($type);
@@ -59,17 +64,17 @@ class Factory{
 
 		return $entity;
 	}*/
+	
+	public function registerVehicles($force = false): void{
+		//TODO New method as discussed.
+	}
 
 	/**
-	 * Only run once to load all the designs into memory.
-	 *
-	 * @internal
-	 * @throws Exception
+	 * Register all designs from manifest into memory (can be used to reload designs during runtime)
+	 * @throws DesignException
 	 */
-	public function loadDesigns(): void{
+	public function registerDesigns($force = false): void{
 		$this->plugin->saveResource("Designs/Design_Manifest.json");
-		
-		//TODO Part of new custom system.
 
 		$manifest = json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/Design_Manifest.json"), true) ?? [];
 
@@ -81,9 +86,13 @@ class Factory{
 			$uuid = $data["uuid"] ?? "";
 			$name = $data["name"] ?? "";
 			$geometry = $name . "_Geometry.json"; //New standard (0.1.0+)
+			
+			if(array_key_exists($name, $this->designs) && !$force){
+				throw new DesignException("Failed to register design '{$name}', design already loaded.");
+			}
 
 			if (!is_string($uuid) || $uuid !== "" || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
-				throw new DesignException("Design '{$name}' has an invalid UUID of '{$uuid}'");
+				throw new DesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
 			}
 
 			$this->plugin->saveResource("Designs/" . $name . ".png", true);
@@ -95,25 +104,25 @@ class Factory{
 			} elseif (file_exists($this->plugin->getDataFolder() . "Designs/" . $name . ".png")){
 				$design = $this->readDesignFile($this->plugin->getDataFolder() . "Designs/" . $name . ".png");
 			} else {
-				throw new DesignException("Design file '{$name}.png/.json' for '{$name}' does not exist.");
+				throw new DesignException("Failed to register design '{$name}', Design file '{$name}.png/.json' does not exist.");
 			}
 
 			if(file_exists($this->plugin->getDataFolder() . "Designs/" . $geometry)){
 				$geoData = json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/" . $geometry));
 			} else {
-				throw new DesignException("File '{$geometry}' does not exist.");
+				throw new DesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
 			}
 			$oldSkin = new Skin($uuid,$design,"",$name,json_encode($geoData));
 			try{
 				$oldSkin->validate();
 			} catch (InvalidArgumentException $e){
-				throw new DesignException("Design data for '{$name}' is invalid: {$e->getMessage()}");
+				throw new DesignException("Failed to register design '{$name}', Design data (skin/UV) is invalid: {$e->getMessage()}");
 			}
 
 			// MCPE 1.13.0 change to SkinData:
 			$this->designs[$name] = SkinAdapterSingleton::get()->toSkinData($oldSkin);
 
-			$this->plugin->getLogger()->debug("Loaded design '{$name}'");
+			$this->plugin->getLogger()->debug("Successfully registered design '{$name}'");
 		}
 	}
 
@@ -161,7 +170,7 @@ class Factory{
 			}
 			@imagedestroy($img);
 			//file_put_contents(rtrim($path, "png") . "json", json_encode(["data" => base64_encode($bytes)]));
-			$this->plugin->getLogger()->debug("Saved design to json.");
+			//$this->plugin->getLogger()->debug("Saved design to json.");
 			return $bytes;
 		} elseif ($type === "json") {
 			$this->plugin->getLogger()->debug("Loaded design from original json.");
