@@ -14,14 +14,14 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use Exception;
+use DirectoryIterator;
 use InvalidArgumentException;
 
-use JaxkDev\Vehicles\Exceptions\DesignException;
 use pocketmine\entity\Skin;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
+use JaxkDev\Vehicles\Exceptions\DesignException;
 
 class Factory{
 	/** @var Main */
@@ -29,6 +29,9 @@ class Factory{
 
 	/** @var String|SkinData[] */
 	private $designs = [];
+
+	/** @var String[] */
+	private $vehicles = [];
 
 	public function __construct(Main $plugin)
 	{
@@ -64,14 +67,34 @@ class Factory{
 
 		return $entity;
 	}*/
-	
+
+	/**
+	 * Register all vehicles from plugin_data/Vehicles/Vehicles/*.json into memory.
+	 * Can be used to reload data but with argument force being true to overwrite existing vehicles.
+	 *
+	 * @param bool $force
+	 */
 	public function registerVehicles($force = false): void{
 		//TODO New method as discussed.
+		$this->plugin->saveResource("Designs/BasicCar.json"); //Default
+
+		foreach(new DirectoryIterator($this->plugin->getDataFolder() . "Vehicles/") as $file){
+			$name = $file->getFilename();
+			if($name === "." || $name === "..") continue;
+
+			$path = $this->plugin->getDataFolder() . "Vehicles/{$name}";
+			$data = json_decode(file_get_contents($path), true);
+
+			//Actually register here:
+			//TODO
+		}
 	}
 
 	/**
-	 * Register all designs from manifest into memory (can be used to reload designs during runtime)
-	 * @throws DesignException
+	 * Register all designs from plugin_data/Vehicles/Designs/Design_Manifest.json into memory.
+	 * Can be used to reload data but with argument force being true to overwrite existing vehicles.
+	 *
+	 * @param bool $force
 	 */
 	public function registerDesigns($force = false): void{
 		$this->plugin->saveResource("Designs/Design_Manifest.json");
@@ -91,7 +114,7 @@ class Factory{
 				throw new DesignException("Failed to register design '{$name}', design already loaded.");
 			}
 
-			if (!is_string($uuid) || $uuid !== "" || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
+			if (!is_string($uuid) || $uuid === "" || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
 				throw new DesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
 			}
 
@@ -142,7 +165,7 @@ class Factory{
 	 * Return the RGBA Byte array ready for use from a UV Map (png/json)
 	 * @param string $path
 	 * @return string|null RGBA Bytes to use.
-	 * @throws Exception
+	 * @throws PluginException|DesignException
 	 */
 	public function readDesignFile(string $path): ?string{
 		$type = pathinfo($path, PATHINFO_EXTENSION);

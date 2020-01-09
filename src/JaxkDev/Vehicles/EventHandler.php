@@ -26,7 +26,6 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
-use JaxkDev\Vehicles\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
 
 class EventHandler implements Listener
 {

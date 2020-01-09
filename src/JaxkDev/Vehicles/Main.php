@@ -14,13 +14,13 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use JaxkDev\Vehicles\Exceptions\DesignException;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
-use JaxkDev\Vehicles\Factory;
+use JaxkDev\Vehicles\Exceptions\DesignException;
+use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class Main extends PluginBase
 {
@@ -48,18 +48,26 @@ class Main extends PluginBase
 		self::$instance = $this;
 		$this->getLogger()->debug("Loading all resources...");
 
-		//Save defaults here.
-		$this->saveConfig();
-
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
 		$this->factory = new Factory($this);
 		$this->eventHandler = new EventHandler($this);
 
 		//Load any that need to be loaded.
+		$this->getLogger()->debug("Registering designs...");
 		try{
-			$this->factory->loadDesigns();
+			$this->factory->registerDesigns();
 		} catch (DesignException $e){
+			$this->getLogger()->debug("Failed to register designs on load, below contains the error(reason).");
+			$this->getLogger()->critical($e->getMessage());
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+		}
+
+		$this->getLogger()->debug("Registering vehicles...");
+		try{
+			$this->factory->registerVehicles();
+		} catch (VehicleException $e){
+			$this->getLogger()->debug("Failed to register vehicles on load, below contains the error(reason).");
 			$this->getLogger()->critical($e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 		}
@@ -69,12 +77,6 @@ class Main extends PluginBase
 
 	public function onEnable()
 	{
-		$this->getLogger()->debug("Registering default vehicles...");
-		$this->factory->registerVehicles();
-		
-		/*$this->getLogger()->debug("Registering external vehicles...");
-		 **Rewrite** */
-
 		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);
 	}
 

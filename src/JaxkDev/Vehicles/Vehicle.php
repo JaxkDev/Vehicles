@@ -14,8 +14,6 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use JaxkDev\Vehicles\Main;
-
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;

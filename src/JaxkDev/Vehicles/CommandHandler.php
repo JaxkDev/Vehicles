@@ -19,8 +19,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\command\ConsoleCommandSender;
 
-use JaxkDev\Vehicles\Vehicle\Vehicle;
-
 class CommandHandler
 {
 	/** @var Main */
