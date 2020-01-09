@@ -70,10 +70,10 @@ class Main extends PluginBase
 	public function onEnable()
 	{
 		$this->getLogger()->debug("Registering default vehicles...");
-		$this->vehicleFactory->registerDefaultVehicles();
+		$this->factory->registerVehicles();
+		
 		/*$this->getLogger()->debug("Registering external vehicles...");
-		$this->vehicleFactory->registerExternalVehicles();*/
-		$this->getLogger()->debug("That's all done now.");
+		 **Rewrite** */
 
 		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);
 	}
@@ -82,12 +82,6 @@ class Main extends PluginBase
 	{
 		$this->commandHandler->handleCommand($sender, $args);
 		return true;
-	}
-
-	public function saveCfg() : void
-	{
-		$this->cfgObject->setAll($this->cfg);
-		$this->cfgObject->save();
 	}
 
 	public static function getInstance() : self{
