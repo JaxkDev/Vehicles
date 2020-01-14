@@ -1,4 +1,5 @@
 ---
+build-by-default: false
 branches:
 - master
 projects:
