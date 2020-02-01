@@ -76,7 +76,6 @@ class Factory{
 	 */
 	public function registerVehicles($force = false): void{
 		//TODO ENTANGLE WITH NEW METHOD AS DISCUSSED.
-		$this->plugin->saveResource("Designs/BasicCar.json"); //Default
 
 		foreach(new DirectoryIterator($this->plugin->getDataFolder() . "Vehicles/") as $file){
 			$name = $file->getFilename();

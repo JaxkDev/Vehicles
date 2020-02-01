@@ -48,6 +48,8 @@ class Main extends PluginBase{
 		self::$instance = $this;
 		$this->getLogger()->debug("Loading all resources...");
 
+		$this->saveResource("Vehicles/BasicCar.json");
+
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
 		$this->factory = new Factory($this);
