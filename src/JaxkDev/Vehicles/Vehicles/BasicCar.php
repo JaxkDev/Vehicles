@@ -24,7 +24,7 @@ use pocketmine\network\mcpe\protocol\types\SkinData;
 
 class BasicCar extends Vehicle {
 
-	//TODO Delete. (here for ref of values)
+	//TODO DELETE. (just here for easier ref of values)
 
 	public $width = 3; //rough, probably no where near.
 	public $height = 2;

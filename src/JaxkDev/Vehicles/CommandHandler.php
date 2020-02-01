@@ -78,7 +78,7 @@ class CommandHandler
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
-				$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -89,7 +89,7 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
 					return;
 				}
 				if($this->plugin->vehicleFactory->isRegistered($args[0])){

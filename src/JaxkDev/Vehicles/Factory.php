@@ -43,19 +43,19 @@ class Factory{
 	 * @param string $type
 	 * @param Level $level
 	 * @param Vector3 $pos
-	 * @return Vehicle
+	 * @return Vehicles
 	 */
-	/*public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicle{
+	/*public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicles{
 	
 		
-		Todo: completely rewrite the shit out of this.
+		TODO: COMPLETELY REWRITE THE SHIT OUT OF THIS.
 	
 	
 		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
 
 		$type = $this->findClass($type);
 		if($type === null){
-			throw new ClassNotFoundException("Vehicle type \"${$type}\" Has escaped our reaches and cant be found...");
+			throw new ClassNotFoundException("Vehicles type \"${$type}\" Has escaped our reaches and cant be found...");
 		}
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
@@ -63,7 +63,7 @@ class Factory{
 		}
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->debug("Vehicle \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->debug("Vehicles \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return $entity;
 	}*/
@@ -75,7 +75,7 @@ class Factory{
 	 * @param bool $force
 	 */
 	public function registerVehicles($force = false): void{
-		//TODO New method as discussed.
+		//TODO ENTANGLE WITH NEW METHOD AS DISCUSSED.
 		$this->plugin->saveResource("Designs/BasicCar.json"); //Default
 
 		foreach(new DirectoryIterator($this->plugin->getDataFolder() . "Vehicles/") as $file){
@@ -86,7 +86,7 @@ class Factory{
 			$data = json_decode(file_get_contents($path), true);
 
 			//Actually register here:
-			//TODO
+			//TODO DECIDE ON DATA STORAGE.
 		}
 	}
 
@@ -114,7 +114,7 @@ class Factory{
 				throw new DesignException("Failed to register design '{$name}', design already loaded.");
 			}
 
-			if (!is_string($uuid) || $uuid === "" || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
+			if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1) {
 				throw new DesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
 			}
 

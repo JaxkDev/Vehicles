@@ -14,15 +14,12 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-class VehicleType
-{
+class VehicleType{
 	public const TYPE_LAND = 0;
 	public const TYPE_WATER = 1;
 	public const TYPE_AIR = 2;
 	//Rail possibly ?
+	public const TYPE_OTHER = 9;
 
-	public function __construct()
-	{
-
-	}
+	private function __construct(){}
 }

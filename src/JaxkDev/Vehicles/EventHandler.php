@@ -33,6 +33,9 @@ class EventHandler implements Listener
 	public $plugin;
 
 
+	//TODO ENTANGLE WITH REWRITE.
+
+
 	public function __construct(Main $plugin)
 	{
 		$this->plugin = $plugin;

@@ -19,11 +19,12 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
+use JaxkDev\Vehicles\Vehicles\Vehicle;
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
-class Main extends PluginBase
-{
+class Main extends PluginBase{
+
 	private static $instance;
 
 	/** @var String|Vehicle[] */
@@ -43,8 +44,7 @@ class Main extends PluginBase
 	/** @var String|String[] */
 	public $interactCommands = [];
 
-	public function onLoad()
-	{
+	public function onLoad(): void{
 		self::$instance = $this;
 		$this->getLogger()->debug("Loading all resources...");
 
@@ -58,7 +58,7 @@ class Main extends PluginBase
 		try{
 			$this->factory->registerDesigns();
 		} catch (DesignException $e){
-			$this->getLogger()->debug("Failed to register designs on load, below contains the error(reason).");
+			$this->getLogger()->debug("Failed to register designs on load, below contains the error (often including a user friendly reason).");
 			$this->getLogger()->critical($e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 		}
@@ -67,21 +67,17 @@ class Main extends PluginBase
 		try{
 			$this->factory->registerVehicles();
 		} catch (VehicleException $e){
-			$this->getLogger()->debug("Failed to register vehicles on load, below contains the error(reason).");
+			$this->getLogger()->debug("Failed to register vehicles on load, below contains the error (often including a user friendly reason).");
 			$this->getLogger()->critical($e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 		}
-
-		$this->getLogger()->debug("Loaded all resources !");
 	}
 
-	public function onEnable()
-	{
+	public function onEnable(): void{
 		$this->getServer()->getPluginManager()->registerEvents($this->eventHandler, $this);
 	}
 
-	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
-	{
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
 		$this->commandHandler->handleCommand($sender, $args);
 		return true;
 	}

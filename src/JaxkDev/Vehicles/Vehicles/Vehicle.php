@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles;
+namespace JaxkDev\Vehicles\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\item\Item;
@@ -31,9 +31,11 @@ use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 
+use JaxkDev\Vehicles\Main;
+
 use LogicException;
 
-final class Vehicle extends Entity implements Rideable
+class Vehicle extends Entity implements Rideable
 {
 	public const NETWORK_ID = EntityIds::PLAYER;
 
@@ -65,7 +67,7 @@ final class Vehicle extends Entity implements Rideable
 	private $plugin;
 
 	/**
-	 * Vehicle constructor.
+	 * Vehicles constructor.
 	 * @param Level $level
 	 * @param CompoundTag $nbt
 	 */
@@ -75,8 +77,8 @@ final class Vehicle extends Entity implements Rideable
 
 		parent::__construct($level, $nbt);
 
-		$this->setNameTag(C::RED."[Vehicle] ".C::GOLD.$this->getName());
-		$this->setNameTagAlwaysVisible($this->plugin->cfg["vehicles"]["show-nametags"]);
+		//$this->setNameTag(C::RED."[Vehicles] ".C::GOLD.$this->getName());
+		//$this->setNameTagAlwaysVisible($this->plugin->cfg["vehicles"]["show-nametags"]);
 		$owner = $this->namedtag->getString("ownerUUID", "NA");
 		//$this->plugin->getLogger()->debug("ownerUUID: ".$owner);
 		if($owner !== "NA"){
