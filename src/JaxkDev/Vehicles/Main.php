@@ -30,7 +30,9 @@ class Main extends PluginBase{
 	/** @var String|Vehicle[] */
 	public static $inVehicle = [];
 
-	public $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
+	public static $vehicleDataVersion = 1;
+
+	public static $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
 
 	/** @var CommandHandler */
 	private $commandHandler;

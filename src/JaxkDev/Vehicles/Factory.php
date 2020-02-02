@@ -22,15 +22,13 @@ use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
 use JaxkDev\Vehicles\Exceptions\DesignException;
+use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class Factory{
 	/** @var Main */
 	private $plugin;
 
-	/** @var String|SkinData[] */
 	private $designs = [];
-
-	/** @var String[] */
 	private $vehicles = [];
 
 	public function __construct(Main $plugin)
@@ -39,31 +37,29 @@ class Factory{
 	}
 
 	/*
-	 * Spawns a vehicle.
-	 * @param string $type
+	 * Spawns a vehicle, with specified data.
+	 * @param any[] $vehicle
 	 * @param Level $level
 	 * @param Vector3 $pos
-	 * @return Vehicles
+	 * @return Vehicle|null
 	 */
-	/*public function spawnVehicle(string $type, Level $level, Vector3 $pos): Vehicles{
-	
-		
-		TODO: COMPLETELY REWRITE THE SHIT OUT OF THIS.
-	
-	
-		if(!$this->isRegistered($type)) throw new InvalidArgumentException("Type \"${$type} is not a registered vehicle.");
+	/*public function spawnVehicle($vehicle, Level $level, Vector3 $pos): ?Vehicle{
 
-		$type = $this->findClass($type);
-		if($type === null){
-			throw new ClassNotFoundException("Vehicles type \"${$type}\" Has escaped our reaches and cant be found...");
-		}
+
+		TODO: - COMPLETELY REWRITE THE SHIT OUT OF THIS.
+			  - NBT
+
+
 		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
 		if($entity === null){
-			throw new InvalidArgumentException("Type '${type}' is not a registered vehicle.");
+			throw new PluginException("Vehicle class not found, who's been touching my code !");
 		}
+
+		$this->plugin->getLogger()->debug("Spawning vehicle.");
+
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->debug("Vehicles \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->debug("Vehicle type \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
 
 		return $entity;
 	}*/
@@ -75,17 +71,66 @@ class Factory{
 	 * @param bool $force
 	 */
 	public function registerVehicles($force = false): void{
-		//TODO ENTANGLE WITH NEW METHOD AS DISCUSSED.
-
 		foreach(new DirectoryIterator($this->plugin->getDataFolder() . "Vehicles/") as $file){
-			$name = $file->getFilename();
-			if($name === "." || $name === "..") continue;
+			$fName = $file->getFilename();
+			if($fName[0] === ".") continue;
 
-			$path = $this->plugin->getDataFolder() . "Vehicles/{$name}";
+			$path = $this->plugin->getDataFolder() . "Vehicles/{$fName}";
 			$data = json_decode(file_get_contents($path), true);
 
-			//Actually register here:
-			//TODO DECIDE ON DATA STORAGE.
+			// Type Checks on data.
+			if(($name = $data["name"] ?? null) === null) throw new VehicleException("{$fName} has no name specified.");
+
+			if(($designName = $data["design"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no design specified.");
+
+			if(($version = $data["version"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no version specified.");
+
+			if(($seatPositions = $data["seatPositions"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no seat positions specified.");
+			if(($seatPositions["driver"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no driver seat position specified .");
+			if(count($seatPositions["driver"]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has an invalid driver seat position ( format: [X,Y,Z] )");
+			if(($seatPositions["passengers"] ?? null) === null){
+				$seatPositions["passengers"] = []; //Default
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no passenger seats, reverting to default of '[]'");
+			} else if(!is_array($seatPositions["passengers"]) || count($seatPositions["passengers"][0]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has invalid passenger seat positions ( format: [[X,Y,Z],[X,Y,Z]] )");
+
+
+			//TODO BBOX.
+
+
+			if(($data["gravity"] ?? null) === null){
+				$data["gravity"] = 1.0; //Default
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no gravity specified, reverting to default of '1.0'");
+			} else if($data["gravity"] < 0) $this->plugin->getLogger()->warning("IMPORTANT, A gravity of < 1 can cause serious issues if not correctly handled (vehicle - {$name}).");
+
+			if(($data["speedMultiplier"] ?? null) === null){
+				$data["speedMultiplier"] = ["forward" => 1, "backward" => 1];
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no speedMultipliers, reverting to default of 'Forward = 1, Backward = 1'");
+			} else {
+				if(($data["speedMultiplier"]["forward"] ?? null) === null){
+					$data["speedMultiplier"]["forward"] = 1;
+					$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no forward speedMultiplier, reverting to default of '1'");
+				}
+				if(($data["speedMultiplier"]["backward"] ?? null) === null){
+					$data["speedMultiplier"]["backward"] = 1;
+					$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no backward speedMultiplier, reverting to default of '1'");
+				}
+			}
+
+
+			// Validate data.
+			if(($this->vehicles[$name] ?? null) !== null && !$force) throw new VehicleException("Vehicle '{$name}' cannot be registered, its already registered (Could be due to a server 'reload' which is not supported).");
+
+			$currentV = Main::$vehicleDataVersion;
+			if($currentV !== $data["version"]) throw new PluginException("Vehicle {$name} has a version of {$data["version"]} while the plugin only supports {$currentV}.");
+
+			if($this->getDesign($data["design"]) === null) throw new VehicleException("Vehicle {$name} in {$fName} is using a design ({$data["design"]}) that has not been registered.");
+
+
+			// Done all validations. (I think)
+
+			$this->vehicles[$name] = $data;
+
+			$this->plugin->getLogger()->debug("Registered vehicle {$name} from {$fName}");
 		}
 	}
 
@@ -106,7 +151,7 @@ class Factory{
 			$uuid = $data["uuid"] ?? "";
 			$name = $data["name"] ?? "";
 			$geometry = $name . "_Geometry.json"; //New standard (0.1.0+)
-			
+
 			if(array_key_exists($name, $this->designs) && !$force){
 				throw new DesignException("Failed to register design '{$name}', design already loaded.");
 			}
