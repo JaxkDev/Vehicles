@@ -48,6 +48,8 @@ class Main extends PluginBase{
 		self::$instance = $this;
 		$this->getLogger()->debug("Loading all resources...");
 
+		$this->saveResource("README.md");
+		$this->saveResource("skeleton.json");
 		$this->saveResource("Vehicles/BasicCar.json");
 		$this->saveResource("Designs/Design_Manifest.json");
 
