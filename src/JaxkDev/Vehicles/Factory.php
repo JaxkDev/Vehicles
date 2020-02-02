@@ -96,8 +96,6 @@ class Factory{
 	 * @param bool $force
 	 */
 	public function registerDesigns($force = false): void{
-		$this->plugin->saveResource("Designs/Design_Manifest.json");
-
 		$manifest = json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/Design_Manifest.json"), true) ?? [];
 
 		if(count($manifest) === 0){
@@ -117,9 +115,9 @@ class Factory{
 				throw new DesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
 			}
 
-			$this->plugin->saveResource("Designs/" . $name . ".png", true);
-			$this->plugin->saveResource("Designs/" . $name . ".json", true);
-			$this->plugin->saveResource("Designs/" . $geometry, true);
+			$this->plugin->saveResource("Designs/" . $name . ".png", false);
+			$this->plugin->saveResource("Designs/" . $name . ".json", false);  //Load in if default vehicles.
+			$this->plugin->saveResource("Designs/" . $geometry, false);
 
 			if(file_exists($this->plugin->getDataFolder() . "Designs/" . $name . ".json")){
 				$design = $this->readDesignFile($this->plugin->getDataFolder() . "Designs/" . $name . ".json");

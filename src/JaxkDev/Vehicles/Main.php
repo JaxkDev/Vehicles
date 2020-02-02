@@ -49,6 +49,7 @@ class Main extends PluginBase{
 		$this->getLogger()->debug("Loading all resources...");
 
 		$this->saveResource("Vehicles/BasicCar.json");
+		$this->saveResource("Designs/Design_Manifest.json");
 
 		//Add handlers and others here.
 		$this->commandHandler = new CommandHandler($this);
