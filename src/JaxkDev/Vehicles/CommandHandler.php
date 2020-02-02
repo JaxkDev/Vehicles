@@ -30,7 +30,7 @@ class CommandHandler
 	public function __construct(Main $plugin)
 	{
 		$this->plugin = $plugin;
-		$this->prefix = $this->plugin->prefix;
+		$this->prefix = Main::$prefix;
 	}
 	
 	//TODO part of rewrite for handling nbt+id's
@@ -58,7 +58,6 @@ class CommandHandler
 				$sender->sendMessage($this->prefix.C::RED."-- HELP --");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles help");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles credits");
-				$sender->sendMessage($this->prefix.C::GOLD."/vehicles version");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles spawn [type]");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles types/list");
 				$sender->sendMessage($this->prefix.C::GOLD."/vehicles remove");
@@ -70,15 +69,11 @@ class CommandHandler
 				$sender->sendMessage($this->prefix.C::GOLD."--- Credits ---");
 				$sender->sendMessage($this->prefix.C::GREEN."Developer: ".C::RED."JaxkDev\n".$this->prefix.C::GREEN."Testers: ".C::RED."Kevin (@kevinishawesome), 'Simule City' beta players.");
 				break;
-			case 'version':
-			case 'ver':
-				$sender->sendMessage($this->prefix.C::GOLD."Version: ".C::RED.$this->plugin->getDescription()->getVersion());
-				break;
 			case 'list':
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
-				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -89,17 +84,17 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->vehicleFactory->getTypes())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
 					return;
 				}
-				if($this->plugin->vehicleFactory->isRegistered($args[0])){
-					$this->plugin->vehicleFactory->spawnVehicle($args[0],$sender->getLevel(), $sender->asVector3());
+				if($this->plugin->factory->getVehicleData($args[0]) !== null){
+					$this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData($args[0]), $sender->getLevel(), $sender->asVector3());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");
 					return;
 				}
-				$sender->sendMessage($this->prefix.C::GOLD."\"".$args[0]."\" spawned.");
+				$sender->sendMessage($this->prefix.C::GOLD."\"".$args[0]."\" Created.");
 				break;
 			case 'del':
 			case 'rem':

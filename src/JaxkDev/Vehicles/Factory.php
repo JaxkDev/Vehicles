@@ -17,10 +17,15 @@ namespace JaxkDev\Vehicles;
 use DirectoryIterator;
 use InvalidArgumentException;
 
+
+use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
+use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
+use JaxkDev\Vehicles\Vehicles\Vehicle;
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
@@ -36,21 +41,22 @@ class Factory{
 		$this->plugin = $plugin;
 	}
 
-	/*
+	/**
 	 * Spawns a vehicle, with specified data.
-	 * @param any[] $vehicle
+	 * @param mixed[] $vehicle
 	 * @param Level $level
 	 * @param Vector3 $pos
 	 * @return Vehicle|null
 	 */
-	/*public function spawnVehicle($vehicle, Level $level, Vector3 $pos): ?Vehicle{
+	public function spawnVehicle($vehicle, Level $level, Vector3 $pos): ?Vehicle{
 
 
-		TODO: - COMPLETELY REWRITE THE SHIT OUT OF THIS.
-			  - NBT
+		//TODO: - NBT !
 
 
-		$entity = Entity::createEntity($type, $level, Entity::createBaseNBT($pos));
+		/** @var Vehicle|null $entity */
+		$entity = Entity::createEntity(Vehicle::class, $level, Entity::createBaseNBT($pos));
+
 		if($entity === null){
 			throw new PluginException("Vehicle class not found, who's been touching my code !");
 		}
@@ -59,10 +65,10 @@ class Factory{
 
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->debug("Vehicle type \"".$type."\" spawned at ".$pos." in the level ".$level->getName());
+		$this->plugin->getLogger()->debug("Vehicle '{$vehicle["name"]} spawned at '{$pos}' in level '".$level->getName()."'");
 
 		return $entity;
-	}*/
+	}
 
 	/**
 	 * Register all vehicles from plugin_data/Vehicles/Vehicles/*.json into memory.
@@ -192,6 +198,26 @@ class Factory{
 	}
 
 	/**
+	 * Retrieve vehicle data by type name.
+	 * @param string $name
+	 * @return mixed[]|null
+	 */
+	public function getVehicleData(string $name){
+		foreach($this->vehicles as $vehicleName => $vehicle){
+			if(strtolower($name) === strtolower($vehicleName)) return $vehicle;
+		}
+		return null;
+	}
+
+	/**
+	 * Retrieve all Vehicle data.
+	 * @return mixed[]
+	 */
+	public function getAllVehicleData(){
+		return $this->vehicles;
+	}
+
+	/**
 	 * Retrieve the Design for a vehicle.
 	 * @param string $name
 	 * @return SkinData|null
@@ -201,6 +227,14 @@ class Factory{
 			if(strtolower($name) === strtolower($designName)) return $design;
 		}
 		return null;
+	}
+
+	/**
+	 * Retrieve all Design's.
+	 * @return mixed[]
+	 */
+	public function getAllDesigns(){
+		return $this->designs;
 	}
 
 	/**
