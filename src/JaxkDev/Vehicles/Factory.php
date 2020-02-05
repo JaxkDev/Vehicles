@@ -17,7 +17,6 @@ namespace JaxkDev\Vehicles;
 use DirectoryIterator;
 use InvalidArgumentException;
 
-
 use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
@@ -25,7 +24,7 @@ use pocketmine\math\Vector3;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
-use JaxkDev\Vehicles\Vehicles\Vehicle;
+
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
@@ -49,7 +48,6 @@ class Factory{
 	 * @return Vehicle|null
 	 */
 	public function spawnVehicle($vehicle, Level $level, Vector3 $pos): ?Vehicle{
-
 
 		//TODO: - NBT !
 

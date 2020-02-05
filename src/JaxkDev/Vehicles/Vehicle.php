@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles\Vehicles;
+namespace JaxkDev\Vehicles;
 
 use pocketmine\Player;
 use pocketmine\item\Item;
@@ -20,8 +20,6 @@ use pocketmine\utils\UUID;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Rideable;
-use pocketmine\entity\EntityIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\network\mcpe\protocol\types\SkinData;
@@ -31,17 +29,10 @@ use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 
-use JaxkDev\Vehicles\Main;
-
 use LogicException;
 
-class Vehicle extends Entity implements Rideable
+class Vehicle extends VehicleBase
 {
-	public const NETWORK_ID = EntityIds::PLAYER;
-
-	protected $gravity = 1; //todo find best value. (remember not to make negative...)
-	protected $drag = 0.5;
-
 	/** @var null|UUID */
 	protected $owner = null;
 

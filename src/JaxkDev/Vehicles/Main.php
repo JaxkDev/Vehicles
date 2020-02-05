@@ -19,7 +19,8 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
 
-use JaxkDev\Vehicles\Vehicles\Vehicle;
+use JaxkDev\Vehicles\Handlers\EventHandler;
+use JaxkDev\Vehicles\Handlers\CommandHandler;
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
@@ -48,7 +49,7 @@ class Main extends PluginBase{
 
 	public function onLoad(): void{
 		self::$instance = $this;
-		$this->getLogger()->debug("Loading all resources...");
+		$this->getLogger()->debug("Saving all resources...");
 
 		$this->saveResource("README.md");
 		$this->saveResource("skeleton.json");
@@ -78,6 +79,8 @@ class Main extends PluginBase{
 			$this->getLogger()->critical($e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 		}
+
+		$this->getLogger()->debug("Finished loading resources.");
 	}
 
 	public function onEnable(): void{

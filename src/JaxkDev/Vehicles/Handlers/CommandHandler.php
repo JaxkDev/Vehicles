@@ -12,12 +12,14 @@
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles;
+namespace JaxkDev\Vehicles\Handlers;
 
 use pocketmine\Player;
-use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use JaxkDev\Vehicles\Main;
+use JaxkDev\Vehicles\Vehicle;
 
 class CommandHandler
 {

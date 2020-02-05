@@ -12,20 +12,23 @@
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles;
+namespace JaxkDev\Vehicles\Handlers;
 
-use pocketmine\event\entity\EntityLevelChangeEvent;
-use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\player\PlayerQuitEvent;
+use JaxkDev\Vehicles\Vehicle;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+
+use JaxkDev\Vehicles\Main;
 
 class EventHandler implements Listener
 {
