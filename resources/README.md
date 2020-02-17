@@ -23,6 +23,7 @@ A skeleton file for this data can be found at `plugin_data/Vehicles/skeleton.jso
 {
   "name": "VehicleName", // No spaces in vehicle name.
   "design": "Design Name", // Must be in design_manifest scroll down for info on that.
+  "type": 0, // 0 = Land, 1 = Water, 2 = Air, 3 = Rail, 9 = Unknown
   "version": 1, // <-- The minor version the vehicle supports, Vehicles v0.1.x = 1, v0.2.x = 2 etc.
 
   "seatPositions": {
@@ -30,7 +31,7 @@ A skeleton file for this data can be found at `plugin_data/Vehicles/skeleton.jso
     "passengers": [[-0.55, -0.4, 0.1]] // <-- Same as above but another array for holding multiple seats. eg [[X,Y,Z],[X,Y,Z],[X,Y,Z]]
   },
 
-  "BBox": [],  // <-- TODO HERE.
+  "BBox": [0,0,0,1,1,1],
 
   "gravity": 1.0,  // Self explanatory i hope.
 

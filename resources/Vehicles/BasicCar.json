@@ -1,6 +1,7 @@
 {
   "name": "BasicCar",
   "design": "BasicCar",
+  "type": 0,
   "version": 1,
 
   "seatPositions": {
@@ -8,7 +9,7 @@
     "passengers": [[-0.55, -0.4, 0.1]]
   },
 
-  "BBox": [],
+  "BBox": [0,0,0,1,1,1],
 
   "gravity": 1.0,
 
