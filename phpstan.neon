@@ -7,4 +7,3 @@ parameters:
 	autoload_directories:
 		- /source/src
 		- /deps
-	inferPrivatePropertyTypeFromConstructor: true
