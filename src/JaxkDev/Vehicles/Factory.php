@@ -70,6 +70,7 @@ class Factory{
 			new StringTag("name", $vehicleData["name"]),
 			new StringTag("design", $vehicleData["design"]),
 			new DoubleTag("gravity", $vehicleData["gravity"]),
+			new FloatTag("scale", $vehicleData["scale"]),
 			new DoubleTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
 			new DoubleTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
 			new DoubleTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
@@ -139,11 +140,16 @@ class Factory{
 			// Type Checks on data.
 			if(($name = $data["name"] ?? null) === null) throw new VehicleException("{$fName} has no name specified.");
 
-			if(($designName = $data["design"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no design specified.");
+			if(($data["design"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no design specified.");
 
 			if(($data["type"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no type specified.");
 
-			if(($version = $data["version"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no version specified.");
+			if(($data["version"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no version specified.");
+
+			if(($data["scale"] ?? null) === null){
+				$data["scale"] = 1.0;
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no scale specified, reverting to default of '1.0'");
+			}
 
 			if(($seatPositions = $data["seatPositions"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no seat positions specified.");
 			if(($seatPositions["driver"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no driver seat position specified .");
