@@ -4,6 +4,8 @@
   "type": 0,
   "version": 1,
 
+  "scale": 1.0,
+
   "seatPositions": {
     "driver": [0, 0, 0],
     "passengers": [[0, 0, 0]]

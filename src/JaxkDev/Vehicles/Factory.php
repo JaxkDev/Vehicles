@@ -21,6 +21,12 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
@@ -37,33 +43,81 @@ class Factory{
 
 	public function __construct(Main $plugin)
 	{
+		Entity::registerEntity(Vehicle::class,false, ["Vehicle"]);
 		$this->plugin = $plugin;
 	}
 
 	/**
 	 * Spawns a vehicle, with specified data.
-	 * @param mixed[] $vehicle
+	 * @param mixed[] $vehicleData
 	 * @param Level $level
 	 * @param Vector3 $pos
 	 * @return Vehicle|null
 	 */
-	public function spawnVehicle($vehicle, Level $level, Vector3 $pos): ?Vehicle{
+	public function spawnVehicle($vehicleData, Level $level, Vector3 $pos): ?Vehicle{
 
-		//TODO: - NBT !
-
-
-		/** @var Vehicle|null $entity */
-		$entity = Entity::createEntity(Vehicle::class, $level, Entity::createBaseNBT($pos));
-
-		if($entity === null){
-			throw new PluginException("Vehicle class not found, who's been touching my code !");
+		$passengerSeats = [];
+		foreach($vehicleData["seatPositions"]["passengers"] as $seat){
+			$passengerSeats[] = new ListTag("", [
+				new FloatTag("x", $seat[0]),
+				new FloatTag("y", $seat[1]),
+				new FloatTag("z", $seat[2])
+			]);
 		}
+
+		$vehicleNBT = new CompoundTag("vehicleData", [
+			new IntTag("type", $vehicleData["type"]),
+			new StringTag("name", $vehicleData["name"]),
+			new StringTag("design", $vehicleData["design"]),
+			new DoubleTag("gravity", $vehicleData["gravity"]),
+			new DoubleTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
+			new DoubleTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
+			new DoubleTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
+			new DoubleTag("rightSpeed", $vehicleData["directionMultiplier"]["right"]),
+			new ListTag("bbox", [
+				new FloatTag("x", $vehicleData["BBox"][0]),
+				new FloatTag("y", $vehicleData["BBox"][1]),
+				new FloatTag("z", $vehicleData["BBox"][2]),
+				new FloatTag("x2", $vehicleData["BBox"][3]),
+				new FloatTag("y2", $vehicleData["BBox"][4]),
+				new FloatTag("z2", $vehicleData["BBox"][5]),
+			]),
+			new ListTag("driverSeat", [
+				new FloatTag("x", $vehicleData["seatPositions"]["driver"][0]),
+				new FloatTag("y", $vehicleData["seatPositions"]["driver"][1]),
+				new FloatTag("z", $vehicleData["seatPositions"]["driver"][2]),
+			]),
+			new ListTag("passengerSeats", $passengerSeats)
+		]);
+
+
+		$nbt = new CompoundTag("", [
+			new ListTag("Pos", [
+				new DoubleTag("", $pos->x),
+				new DoubleTag("", $pos->y),
+				new DoubleTag("", $pos->z)
+			]),
+			new ListTag("Motion", [
+				new DoubleTag("", 0.0),
+				new DoubleTag("", 0.0),
+				new DoubleTag("", 0.0)
+			]),
+			new ListTag("Rotation", [
+				new FloatTag("", 0.0),
+				new FloatTag("", 0.0)
+			]),
+			new IntTag("vehicle", Main::$vehicleDataVersion),
+			$vehicleNBT
+		]);
+
+		/** @var Vehicle $entity */
+		$entity = Entity::createEntity("Vehicle", $level, $nbt);
 
 		$this->plugin->getLogger()->debug("Spawning vehicle.");
 
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->debug("Vehicle '{$vehicle["name"]} spawned at '{$pos}' in level '".$level->getName()."'");
+		$this->plugin->getLogger()->debug("Vehicle '{$vehicleData["name"]}' spawned at '{$pos}' in level '".$level->getName()."'");
 
 		return $entity;
 	}
@@ -87,6 +141,8 @@ class Factory{
 
 			if(($designName = $data["design"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no design specified.");
 
+			if(($data["type"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no type specified.");
+
 			if(($version = $data["version"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no version specified.");
 
 			if(($seatPositions = $data["seatPositions"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no seat positions specified.");
@@ -95,10 +151,13 @@ class Factory{
 			if(($seatPositions["passengers"] ?? null) === null){
 				$seatPositions["passengers"] = []; //Default
 				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no passenger seats, reverting to default of '[]'");
-			} else if(!is_array($seatPositions["passengers"]) || count($seatPositions["passengers"][0]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has invalid passenger seat positions ( format: [[X,Y,Z],[X,Y,Z]] )");
+			} else if(!is_array($seatPositions["passengers"]) || count($seatPositions["passengers"][0]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has invalid passenger seat positions (format: [[X,Y,Z],[X,Y,Z]])");
 
 
-			//TODO BBOX.
+			if(($data["BBox"] ?? null) === null){
+				$data["BBox"] = [0,0,0,1,1,1];
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no BBox, reverting to default of '[0,0,0,1,1,1]'");
+			} else if(!is_array($data["BBox"]) || count($data["BBox"]) !== 6) throw new VehicleException("Vehicle {$name} in {$fName} has a invalid BBox of '{$data["BBox"]}' (format: [x,y,z,x2,y2,z2])");
 
 
 			if(($data["gravity"] ?? null) === null){
@@ -177,11 +236,12 @@ class Factory{
 			}
 
 			if(file_exists($this->plugin->getDataFolder() . "Designs/" . $geometry)){
-				$geoData = json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/" . $geometry));
+				$geoData = (array)json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/" . $geometry));
 			} else {
 				throw new DesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
 			}
-			$oldSkin = new Skin($uuid,$design,"",$name,json_encode($geoData));
+
+			$oldSkin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
 			try{
 				$oldSkin->validate();
 			} catch (InvalidArgumentException $e){

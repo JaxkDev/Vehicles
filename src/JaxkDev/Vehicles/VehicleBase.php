@@ -23,7 +23,6 @@ use pocketmine\utils\UUID;
 use pocketmine\level\Level;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Rideable;
-use pocketmine\entity\EntityIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
@@ -36,10 +35,15 @@ class VehicleBase extends Entity implements Rideable
 	public const VEHICLE_TYPE_RAIL = 3;
 	public const VEHICLE_TYPE_UNKNOWN = 9;
 
-	public const NETWORK_ID = EntityIds::PLAYER;
+	public const NETWORK_ID = 23;
 
 	/** @var UUID|null */
 	protected $uuid = null;
+
+	public $gravity = 1;
+
+	public $width = 2;
+	public $height = 3;
 
 	//---------------------
 
@@ -56,7 +60,7 @@ class VehicleBase extends Entity implements Rideable
 	private $type = 9;
 
 	/** @var float */
-	private $scale = 1.0;
+	private $scale = 1.6;
 
 	/** @var string|null */
 	private $designName = null;
@@ -88,6 +92,7 @@ class VehicleBase extends Entity implements Rideable
 		/** @var CompoundTag $data */
 		$data = $nbt->getCompoundTag("vehicleData");
 
+		$this->uuid = UUID::fromString($data->getString("uuid", UUID::fromRandom()->toString()));
 		$this->type = $data->getInt("type", 9);
 		$this->name = $data->getString("name");
 		$this->designName = $data->getString("design");
@@ -102,6 +107,9 @@ class VehicleBase extends Entity implements Rideable
 		$this->speed["right"] = $data->getDouble("rightSpeed", 1.0);
 
 		$this->bbox = $data->getListTag("bbox")->getAllValues();
+
+		//$this->width = $this->bbox[0]-$this->bbox[3];
+		//$this->height = $this->bbox[1]-$this->bbox[4];
 
 		$this->seats["driver"] = $data->getListTag("driverSeat")->getAllValues();
 
@@ -128,6 +136,7 @@ class VehicleBase extends Entity implements Rideable
 
 		$vehicleData = new CompoundTag("vehicleData", [
 			new IntTag("type", $this->type),
+			new StringTag("uuid", $this->uuid->toString()),
 			new StringTag("name", $this->name),
 			new StringTag("design", $this->designName),
 			new DoubleTag("gravity", $this->gravity),
