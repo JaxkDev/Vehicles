@@ -14,17 +14,24 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
+use pocketmine\item\Item;
 use pocketmine\utils\UUID;
 use pocketmine\level\Level;
 use pocketmine\entity\Entity;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\entity\Rideable;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\SkinData;
+use pocketmine\network\mcpe\protocol\AddPlayerPacket;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
+use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
+use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class VehicleBase extends Entity implements Rideable
@@ -42,8 +49,8 @@ class VehicleBase extends Entity implements Rideable
 
 	public $gravity = 1;
 
-	public $width = 2;
-	public $height = 3;
+	public $width = 1;
+	public $height = 1;
 
 	//---------------------
 
@@ -60,7 +67,7 @@ class VehicleBase extends Entity implements Rideable
 	private $type = 9;
 
 	/** @var float */
-	private $scale = 1.6;
+	private $scale = 1.0;
 
 	/** @var string|null */
 	private $designName = null;
@@ -77,6 +84,7 @@ class VehicleBase extends Entity implements Rideable
 		$this->plugin = Main::getInstance();
 		$this->loadFromNBT($nbt);
 		parent::__construct($level, $nbt);
+		$this->saveIntoNBT(); //Save anything that reverted to default.
 	}
 
 	/**
@@ -108,8 +116,8 @@ class VehicleBase extends Entity implements Rideable
 
 		$this->bbox = $data->getListTag("bbox")->getAllValues();
 
-		//$this->width = $this->bbox[0]-$this->bbox[3];
-		//$this->height = $this->bbox[1]-$this->bbox[4];
+		$this->width = max($this->bbox[0],$this->bbox[3])-min($this->bbox[0],$this->bbox[3]);
+		$this->height = max($this->bbox[1],$this->bbox[4])-min($this->bbox[1],$this->bbox[4]);
 
 		$this->seats["driver"] = $data->getListTag("driverSeat")->getAllValues();
 
@@ -117,7 +125,6 @@ class VehicleBase extends Entity implements Rideable
 			$this->seats["passengers"][] = $ltag->getAllValues();
 		}
 
-		//TODO test (especially passengers)
 	}
 
 	public function saveIntoNBT(): void{
@@ -206,5 +213,44 @@ class VehicleBase extends Entity implements Rideable
 
 	public function getVehiclePassengerSeats(): array{
 		return $this->seats["passengers"];
+	}
+
+	protected function sendSpawnPacket(Player $player) : void{
+		$skin = $this->getVehicleDesign();
+
+		//Below adds the entity ID + skin to the list to be used in the AddPlayerPacket (WITHOUT THIS DEFAULT/NO SKIN WILL BE USED).
+		$pk = new PlayerListPacket();
+		$pk->type = PlayerListPacket::TYPE_ADD;
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($this->uuid, $this->id, $this->getVehicleName()."-".$this->id, $skin);
+		$player->sendDataPacket($pk);
+
+		//Below adds the actual entity and puts the pieces together.
+		$pk = new AddPlayerPacket();
+		$pk->uuid = $this->uuid;
+		$pk->item = Item::get(Item::AIR);
+		$pk->motion = $this->getMotion();
+		$pk->position = $this->asVector3();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->metadata = $this->propertyManager->getAll();
+		$pk->username = $this->getVehicleName()."-".$this->id; //Unique.
+		$player->sendDataPacket($pk);
+
+		//Dont want to keep a fake person there...
+		$pk = new PlayerListPacket();
+		$pk->type = $pk::TYPE_REMOVE;
+		$pk->entries = [PlayerListEntry::createRemovalEntry($this->uuid)];
+		$player->sendDataPacket($pk);
+	}
+
+	//Without this the player will not do the things it should be (driving, sitting etc)
+	protected function broadcastLink(Player $player, int $type = EntityLink::TYPE_RIDER): void{
+		foreach($this->getViewers() as $viewer) {
+			if (!isset($viewer->getViewers()[$player->getLoaderId()])) {
+				$player->spawnTo($viewer);
+			}
+			$pk = new SetActorLinkPacket();
+			$pk->link = new EntityLink($this->getId(), $player->getId(), $type);
+			$viewer->sendDataPacket($pk);
+		}
 	}
 }
