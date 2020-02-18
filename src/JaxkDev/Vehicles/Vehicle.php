@@ -14,11 +14,20 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
+use LogicException;
+use pocketmine\Player;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 
 class Vehicle extends VehicleBase
 {
+	/** @var Player */
+	private $driver = null;
+
+	/** @var Player[] */
+	private $passengers = [];
+
 	/**
 	 * Vehicles constructor.
 	 * @param Level $level
@@ -31,6 +40,8 @@ class Vehicle extends VehicleBase
 		$this->saveNBT();
 	}
 
+	//---------- Logic below... ------------
+
 	/**
 	 * Handle player input.
 	 * @param float $x
@@ -40,5 +51,92 @@ class Vehicle extends VehicleBase
 		//todo
 	}
 
-	//TODO Logic (eg passengers)
+	public function isVehicleEmpty(): bool{
+		return ($this->driver === null && count($this->passengers) === 0);
+	}
+
+	public function getDriver(): ?Player{
+		return $this->driver;
+	}
+
+	public function setDriver(Player $player, bool $override = false): bool{
+		if($this->driver !== null) {
+			if($override) $this->removeDriver();
+			else return false;
+		}
+
+		$player->setGenericFlag(self::DATA_FLAG_RIDING, true);
+		$player->setGenericFlag(self::DATA_FLAG_SITTING, true);
+		$player->setGenericFlag(self::DATA_FLAG_WASD_CONTROLLED, true);
+		$player->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getVehicleDriverSeat());
+
+		$this->setGenericFlag(self::DATA_FLAG_SADDLED, true);
+		$this->driver = $player;
+		Main::$inVehicle[$this->driver->getRawUniqueId()] = $this;
+		$player->sendMessage("You are now driving this vehicle.");
+		$this->broadcastLink($this->driver);
+		$player->sendTip("Sneak/Jump to leave the vehicle.");
+		return true;
+	}
+
+	public function removeDriver(?string $message = "You are no longer driving this vehicle."): bool{
+		if($this->driver === null) return false;
+		$this->driver->setGenericFlag(self::DATA_FLAG_RIDING, false);
+		$this->driver->setGenericFlag(self::DATA_FLAG_SITTING, false);
+		$this->driver->setGenericFlag(self::DATA_FLAG_WASD_CONTROLLED, false);
+
+		$this->setGenericFlag(self::DATA_FLAG_SADDLED, false);
+		if($message !== null) $this->driver->sendMessage($message);
+		$this->broadcastLink($this->driver, EntityLink::TYPE_REMOVE);
+		unset(Main::$inVehicle[$this->driver->getRawUniqueId()]);
+		$this->driver = null;
+		return true;
+	}
+
+	public function getPassengers(){
+		return $this->passengers;
+	}
+
+	public function addPassenger(Player $player, ?int $seat = null, bool $force = false): bool{
+		if((count($this->getPassengers())) === count($this->getVehiclePassengerSeats()) || isset($this->getPassengers()[$seat])){
+			if(!$force || ($seat === null && $force)) return false;
+			if(!$this->removePassengerBySeat($seat, "Your seat has been given to '{$player->getName()}'")) throw new LogicException("Well this is embarrassing... (who knew 1 !== 1)");
+		}
+		if($seat === null){
+			$seat = $this->getNextSeat();
+			if($seat === null) return false; //No space...
+		}
+		$this->passengers[$seat] = $player;
+		Main::$inVehicle[$player->getRawUniqueId()] = $this;
+		$player->setGenericFlag(self::DATA_FLAG_RIDING, true);
+		$player->setGenericFlag(self::DATA_FLAG_SITTING, true);
+		$player->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getVehiclePassengerSeats()[$seat]);
+		$this->broadcastLink($player, EntityLink::TYPE_PASSENGER);
+		$player->sendTip("Sneak/Jump to leave the vehicle.");
+		return true;
+	}
+
+	public function removePassengerBySeat(int $seat, ?string $message): bool{
+		if(isset($this->passengers[$seat])){
+			$player = $this->passengers[$seat];
+			unset($this->passengers[$seat]);
+			unset(Main::$inVehicle[$player->getRawUniqueId()]);
+			$player->setGenericFlag(self::DATA_FLAG_RIDING, false);
+			$player->setGenericFlag(self::DATA_FLAG_SITTING, false);
+			$this->broadcastLink($player, EntityLink::TYPE_REMOVE);
+			$player->sendMessage($message);
+			return true;
+		}
+		return false;
+	}
+
+	public function removePassenger($player, ?string $message): bool{
+		if($player instanceof Player) $player = $player->getUniqueId();
+		foreach(array_keys($this->passengers) as $i){
+			if($this->passengers[$i]->getUniqueId() === $player){
+				return $this->removePassengerBySeat($i, $message);
+			}
+		}
+		return false;
+	}
 }

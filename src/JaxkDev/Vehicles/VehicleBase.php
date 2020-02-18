@@ -18,6 +18,7 @@ use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
@@ -42,7 +43,7 @@ class VehicleBase extends Entity implements Rideable
 	public const VEHICLE_TYPE_RAIL = 3;
 	public const VEHICLE_TYPE_UNKNOWN = 9;
 
-	public const NETWORK_ID = 23;
+	public const NETWORK_ID = self::PLAYER;
 
 	/** @var UUID|null */
 	protected $uuid = null;
@@ -76,7 +77,8 @@ class VehicleBase extends Entity implements Rideable
 	private $design = null;
 
 	private $bbox = [0,0,0,0,0,0];
-	private $seats = ["driver" => [], "passengers" => []];
+
+	private $seats = ["driver" => null, "passengers" => []];
 	private $speed = ["forward" => null, "backward" => null, "left" => null, "right" => null];
 
 	public function __construct(Level $level, CompoundTag $nbt)
@@ -93,6 +95,7 @@ class VehicleBase extends Entity implements Rideable
 	 */
 	public function loadFromNBT(CompoundTag $nbt): void{
 		if(Main::$vehicleDataVersion !== $nbt->getInt("vehicle", -1)){
+			//TODO
 			throw new VehicleException("Vehicle version {$nbt->getInt("vehicle",-1)} does not match expected version ".Main::$vehicleDataVersion);
 		}
 		$this->version = $nbt->getInt("vehicle");
@@ -119,12 +122,17 @@ class VehicleBase extends Entity implements Rideable
 		$this->width = max($this->bbox[0],$this->bbox[3])-min($this->bbox[0],$this->bbox[3]);
 		$this->height = max($this->bbox[1],$this->bbox[4])-min($this->bbox[1],$this->bbox[4]);
 
-		$this->seats["driver"] = $data->getListTag("driverSeat")->getAllValues();
+		$seat = $data->getListTag("driverSeat")->getAllValues();
+		$this->seats["driver"] = new Vector3($seat[0], $seat[1], $seat[2]);
 
 		foreach($data->getListTag("passengerSeats")->getAllValues() as $ltag){
-			$this->seats["passengers"][] = $ltag->getAllValues();
+			$seat = $ltag->getAllValues();
+			$this->seats["passengers"][] = new Vector3($seat[0], $seat[1], $seat[2]);
 		}
 
+
+		// Handlers
+		$this->setScale($this->scale); //TODO BBox
 	}
 
 	public function saveIntoNBT(): void{
@@ -133,11 +141,12 @@ class VehicleBase extends Entity implements Rideable
 
 		$passengerSeats = [];
 
+		/** @var Vector3 $seat */
 		foreach($this->seats["passengers"] as $seat){
 			$passengerSeats[] = new ListTag("", [
-				new FloatTag("x", $seat[0]),
-				new FloatTag("y", $seat[1]),
-				new FloatTag("z", $seat[2])
+				new FloatTag("x", $seat->getX()),
+				new FloatTag("y", $seat->getY()),
+				new FloatTag("z", $seat->getZ())
 			]);
 		}
 
@@ -160,9 +169,9 @@ class VehicleBase extends Entity implements Rideable
 				new FloatTag("z2", $this->bbox[5]),
 			]),
 			new ListTag("driverSeat", [
-				new FloatTag("x", $this->seats["driver"][0]),
-				new FloatTag("y", $this->seats["driver"][1]),
-				new FloatTag("z", $this->seats["driver"][2]),
+				new FloatTag("x", $this->seats["driver"]->getX()),
+				new FloatTag("y", $this->seats["driver"]->getY()),
+				new FloatTag("z", $this->seats["driver"]->getZ()),
 			]),
 			new ListTag("passengerSeats", $passengerSeats)
 		]);
@@ -207,10 +216,13 @@ class VehicleBase extends Entity implements Rideable
 		return $this->seats;
 	}
 
-	public function getVehicleDriverSeat(): array{
+	public function getVehicleDriverSeat(): Vector3{
 		return $this->seats["driver"];
 	}
 
+	/**
+	 * @return Vector3[]
+	 */
 	public function getVehiclePassengerSeats(): array{
 		return $this->seats["passengers"];
 	}
