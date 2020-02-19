@@ -2,13 +2,13 @@ Things to get done
 --
 
 Files to rewrite:
-- [x] Main.php 
-- [x] VehicleType.php
+- [X] Main.php 
+- [X] VehicleType.php
 - [X] Factory.php
 - [X] VehicleBase.php
-- [x] Vehicle.php
-- [ ] CommandHandler.php
-- [ ] EventHandler.php
+- [X] Vehicle.php
+- [X] CommandHandler.php
+- [X] EventHandler.php
 
 
 Vehicle NBT Structure (not including base entity data):

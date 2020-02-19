@@ -22,7 +22,7 @@ use pocketmine\network\mcpe\protocol\types\EntityLink;
 
 class Vehicle extends VehicleBase
 {
-	/** @var Player */
+	/** @var Player|null */
 	private $driver = null;
 
 	/** @var Player[] */
@@ -99,11 +99,12 @@ class Vehicle extends VehicleBase
 
 	public function addPassenger(Player $player, ?int $seat = null, bool $force = false): bool{
 		if((count($this->getPassengers())) === count($this->getVehiclePassengerSeats()) || isset($this->getPassengers()[$seat])){
-			if(!$force || ($seat === null && $force)) return false;
+			if($force && $seat === null) return false;
+			if(!$force) return false;
 			if(!$this->removePassengerBySeat($seat, "Your seat has been given to '{$player->getName()}'")) throw new LogicException("Well this is embarrassing... (who knew 1 !== 1)");
 		}
 		if($seat === null){
-			$seat = $this->getNextSeat();
+			$seat = $this->getNextPassengerSeat();
 			if($seat === null) return false; //No space...
 		}
 		$this->passengers[$seat] = $player;
@@ -116,7 +117,7 @@ class Vehicle extends VehicleBase
 		return true;
 	}
 
-	public function removePassengerBySeat(int $seat, ?string $message): bool{
+	public function removePassengerBySeat(int $seat, ?string $message = null): bool{
 		if(isset($this->passengers[$seat])){
 			$player = $this->passengers[$seat];
 			unset($this->passengers[$seat]);
@@ -124,13 +125,13 @@ class Vehicle extends VehicleBase
 			$player->setGenericFlag(self::DATA_FLAG_RIDING, false);
 			$player->setGenericFlag(self::DATA_FLAG_SITTING, false);
 			$this->broadcastLink($player, EntityLink::TYPE_REMOVE);
-			$player->sendMessage($message);
+			if($message !== null) $player->sendMessage($message);
 			return true;
 		}
 		return false;
 	}
 
-	public function removePassenger($player, ?string $message): bool{
+	public function removePassenger($player, ?string $message = null): bool{
 		if($player instanceof Player) $player = $player->getUniqueId();
 		foreach(array_keys($this->passengers) as $i){
 			if($this->passengers[$i]->getUniqueId() === $player){
@@ -138,5 +139,22 @@ class Vehicle extends VehicleBase
 			}
 		}
 		return false;
+	}
+
+	public function removePlayer(Player $player): bool{
+		if($this->driver !== null){
+			if($this->driver->getUniqueId() === $player->getUniqueId()) return $this->removeDriver();
+		}
+		return $this->removePassenger($player);
+	}
+
+	public function getNextPassengerSeat(): ?int{
+		$max = count($this->getVehiclePassengerSeats());
+		$current = count($this->passengers);
+		if($max === $current) return null;
+		for($i = 0; $i < $max; $i++){
+			if(!isset($this->passengers[$i])) return $i;
+		}
+		throw new LogicException("No seat found when max seats doesnt match currently used seats.");
 	}
 }

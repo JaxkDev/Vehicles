@@ -48,6 +48,7 @@ class CommandHandler
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
 			return;
 		}
+		$sender = $this->plugin->getServer()->getPlayerExact($sender->getName());
 		if(count($args) == 0){
 			$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles help");
 			return;
