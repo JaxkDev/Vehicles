@@ -71,6 +71,7 @@ class Factory{
 			new StringTag("design", $vehicleData["design"]),
 			new DoubleTag("gravity", $vehicleData["gravity"]),
 			new FloatTag("scale", $vehicleData["scale"]),
+			new DoubleTag("baseOffset", $vehicleData["baseOffset"]),
 			new DoubleTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
 			new DoubleTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
 			new DoubleTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
@@ -149,6 +150,11 @@ class Factory{
 			if(($data["scale"] ?? null) === null){
 				$data["scale"] = 1.0;
 				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no scale specified, reverting to default of '1.0'");
+			}
+
+			if(($data["baseOffset"] ?? null) === null){
+				$data["baseOffset"] = 1.0;
+				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no baseOffset specified, reverting to default of '1.0'");
 			}
 
 			if(($seatPositions = $data["seatPositions"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no seat positions specified.");

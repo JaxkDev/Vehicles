@@ -21,6 +21,8 @@ CompoundTag EntityNBT
    - name(string)
    - design(string)
    - gravity(double)
+   - scale(float)
+   - baseOffset(double)
    - forwardSpeeed(double)
    - backwardSpeed(double)
    - leftSpeed(double)

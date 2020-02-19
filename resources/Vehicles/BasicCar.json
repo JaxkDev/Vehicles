@@ -6,6 +6,8 @@
 
   "scale": 1.6,
 
+  "baseOffset": 1.615,
+
   "seatPositions": {
     "driver": [0.55, -0.4, 0.1],
     "passengers": [[-0.55, -0.4, 0.1]]

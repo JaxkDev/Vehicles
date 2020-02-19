@@ -53,6 +53,8 @@ class VehicleBase extends Entity implements Rideable
 	public $width = 1;
 	public $height = 1;
 
+	public $baseOffset = 1;
+
 	//---------------------
 
 	/** @var Main|null */
@@ -84,8 +86,8 @@ class VehicleBase extends Entity implements Rideable
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
 		$this->plugin = Main::getInstance();
-		$this->loadFromNBT($nbt);
 		parent::__construct($level, $nbt);
+		$this->loadFromNBT($nbt);
 		$this->saveIntoNBT(); //Save anything that reverted to default.
 	}
 
@@ -111,6 +113,7 @@ class VehicleBase extends Entity implements Rideable
 		$this->design = $this->plugin->factory->getDesign($this->designName);
 		$this->gravity = $data->getDouble("gravity", 1.0);
 		$this->scale = $data->getFloat("scale", 1.0);
+		$this->baseOffset = $data->getDouble("baseOffset", 1.0);
 
 		$this->speed["forward"] = $data->getDouble("forwardSpeed", 1.0);
 		$this->speed["backward"] = $data->getDouble("backwardSpeed", 1.0);
@@ -119,7 +122,7 @@ class VehicleBase extends Entity implements Rideable
 
 		$this->bbox = $data->getListTag("bbox")->getAllValues();
 
-		$this->width = max($this->bbox[0],$this->bbox[3])-min($this->bbox[0],$this->bbox[3]);
+		$this->width = max(max($this->bbox[0],$this->bbox[3])-min($this->bbox[0],$this->bbox[3]),max($this->bbox[2],$this->bbox[5])-min($this->bbox[2],$this->bbox[5]));
 		$this->height = max($this->bbox[1],$this->bbox[4])-min($this->bbox[1],$this->bbox[4]);
 
 		$seat = $data->getListTag("driverSeat")->getAllValues();
@@ -156,6 +159,8 @@ class VehicleBase extends Entity implements Rideable
 			new StringTag("name", $this->name),
 			new StringTag("design", $this->designName),
 			new DoubleTag("gravity", $this->gravity),
+			new FloatTag("scale", $this->scale),
+			new DoubleTag("baseOffset", $this->baseOffset),
 			new DoubleTag("forwardSpeed", $this->speed["forward"]),
 			new DoubleTag("backwardSpeed", $this->speed["backward"]),
 			new DoubleTag("leftSpeed", $this->speed["left"]),

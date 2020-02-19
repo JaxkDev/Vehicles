@@ -25,7 +25,8 @@ A skeleton file for this data can be found at `plugin_data/Vehicles/skeleton.jso
   "design": "Design Name", // Must be in design_manifest scroll down for info on that.
   "type": 0, // 0 = Land, 1 = Water, 2 = Air, 3 = Rail, 9 = Unknown
   "version": 1, // <-- The minor version the vehicle supports, Vehicles v0.1.x = 1, v0.2.x = 2 etc.
-  "scale": 1, // Specify scale of entity, useful when modelling small.
+  "scale": 1.0, // Specify scale of entity, useful when modelling small.
+  "baseOffset": 1.0 // Specify the base offset of the vehicle
 
   "seatPositions": {
     "driver": [0.55, -0.4, 0.1], // <-- X,Y,Z position of seat in relation to scale + design (requires playing around with)

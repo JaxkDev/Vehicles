@@ -48,7 +48,25 @@ class Vehicle extends VehicleBase
 	 * @param float $y
 	 */
 	public function updateMotion(float $x, float $y): void{
-		//todo
+		//				(1 if only one button, 0.7 if two)
+		//+y = forward. (+1/+0.7)
+		//-y = backward. (-1/-0.7)
+		//+x = left (+1/+0.7)
+		//-x = right (-1/-0.7)
+		if($x !== 0){
+			if($x > 0) $this->yaw -= $x*$this->getVehicleSpeed()["left"];
+			if($x < 0) $this->yaw -= $x*$this->getVehicleSpeed()["right"];
+			$this->motion = $this->getDirectionVector();
+		}
+
+		if($y > 0){
+			//forward
+			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["forward"]);
+			$this->yaw = $this->driver->getYaw();// - turn based on players rotation
+		} elseif ($y < 0){
+			//reverse
+			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["backward"]);
+		}
 	}
 
 	public function isVehicleEmpty(): bool{
