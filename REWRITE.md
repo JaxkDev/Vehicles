@@ -9,6 +9,7 @@ Files to rewrite:
 - [X] Vehicle.php
 - [X] CommandHandler.php
 - [X] EventHandler.php
+- [ ] **CLEANUP**
 
 
 Vehicle NBT Structure (not including base entity data):
@@ -20,13 +21,13 @@ CompoundTag EntityNBT
    - type(int)
    - name(string)
    - design(string)
-   - gravity(double)
+   - gravity(float)
    - scale(float)
-   - baseOffset(double)
-   - forwardSpeeed(double)
-   - backwardSpeed(double)
-   - leftSpeed(double)
-   - rightSpeed(double)
+   - baseOffset(float)
+   - forwardSpeeed(float)
+   - backwardSpeed(float)
+   - leftSpeed(float)
+   - rightSpeed(float)
    - bbox(ListTag)
      - x(float)
      - y(float)

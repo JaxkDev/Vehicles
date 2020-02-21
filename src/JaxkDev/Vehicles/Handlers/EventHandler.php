@@ -40,7 +40,7 @@ class EventHandler implements Listener
 		$this->plugin = $plugin;
 	}
 
-	public function onPlayerLeaveEvent(PlayerQuitEvent $event){
+	public function onPlayerLeaveEvent(PlayerQuitEvent $event): void{
 		$player = $event->getPlayer();
 		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
 			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
@@ -48,7 +48,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event){
+	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event): void{
 		if($event->getEntity() instanceof Player){
 			/** @var Player $player */
 			$player = $event->getEntity();
@@ -60,7 +60,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerDeathEvent(PlayerDeathEvent $event){
+	public function onPlayerDeathEvent(PlayerDeathEvent $event): void{
 		$player = $event->getPlayer();
 		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
 			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
@@ -69,7 +69,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerTeleportEvent(EntityTeleportEvent $event){
+	public function onPlayerTeleportEvent(EntityTeleportEvent $event): void{
 		if($event->getEntity() instanceof Player){
 			/** @var Player $player */
 			$player = $event->getEntity();
@@ -86,7 +86,7 @@ class EventHandler implements Listener
 	 * @priority Lowest
 	 * Some interruption by MultiWorld
 	 */
-	public function onEntityDamageEvent(EntityDamageByEntityEvent $event){
+	public function onEntityDamageEvent(EntityDamageByEntityEvent $event): void{
 		if($event->getEntity() instanceof Vehicle){
 			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
 			if(!($event->getDamager() instanceof Player)) return;
@@ -135,7 +135,7 @@ class EventHandler implements Listener
 	 * Handle a players motion when driving.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onPlayerInputPacket($event){
+	public function onPlayerInputPacket($event): void{
 		/** @var PlayerInputPacket $packet */
 		$packet = $event->getPacket();
 		$player = $event->getPlayer();
@@ -156,7 +156,7 @@ class EventHandler implements Listener
 	 * Handle a players interact.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onInteractPacket($event){
+	public function onInteractPacket($event): void{
 		/** @var InteractPacket $packet */
 		$packet = $event->getPacket();
 
@@ -174,7 +174,7 @@ class EventHandler implements Listener
 	 * Handle InventoryTransaction.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onInventoryTransactionPacket($event){
+	public function onInventoryTransactionPacket($event): void{
 		/** @var InventoryTransactionPacket $packet */
 		$packet = $event->getPacket();
 
@@ -194,7 +194,7 @@ class EventHandler implements Listener
 	/**
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onDataPacketEvent(DataPacketReceiveEvent $event){
+	public function onDataPacketEvent(DataPacketReceiveEvent $event): void{
 		$packet = $event->getPacket();
 		$pid = $packet->pid();
 		switch($pid){

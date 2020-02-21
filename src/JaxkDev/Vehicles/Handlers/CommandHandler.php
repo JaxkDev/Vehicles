@@ -14,9 +14,9 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles\Handlers;
 
-use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\command\CommandSender;
+use pocketmine\plugin\PluginException;
 use pocketmine\command\ConsoleCommandSender;
 use JaxkDev\Vehicles\Main;
 
@@ -40,8 +40,8 @@ class CommandHandler
 	 * @internal 
 	 * Used directly from pmmp, no other plugins should be passing commands here (if really needed, dispatch command from server).
 	 *
-	 * @param CommandSender|Player $sender
-	 * @param array $args
+	 * @param CommandSender $sender
+	 * @param string[] $args
 	 */
 	function handleCommand(CommandSender $sender, array $args): void{
 		if($sender instanceof ConsoleCommandSender){
@@ -49,6 +49,7 @@ class CommandHandler
 			return;
 		}
 		$sender = $this->plugin->getServer()->getPlayerExact($sender->getName());
+		if($sender === null) throw new PluginException("So this happened... (Unknown player using vehicle commands !)");
 		if(count($args) == 0){
 			$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles help");
 			return;
@@ -73,7 +74,7 @@ class CommandHandler
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
-				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys((array)$this->plugin->factory->getAllVehicleData())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -84,7 +85,7 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys((array)$this->plugin->factory->getAllVehicleData())));
 					return;
 				}
 				if($this->plugin->factory->getVehicleData($args[0]) !== null){

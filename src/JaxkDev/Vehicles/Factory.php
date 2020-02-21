@@ -38,7 +38,10 @@ class Factory{
 	/** @var Main */
 	private $plugin;
 
+	/** @var array<string, SkinData> */
 	private $designs = [];
+
+	/** @var array<string, mixed[]>*/
 	private $vehicles = [];
 
 	public function __construct(Main $plugin)
@@ -69,13 +72,13 @@ class Factory{
 			new IntTag("type", $vehicleData["type"]),
 			new StringTag("name", $vehicleData["name"]),
 			new StringTag("design", $vehicleData["design"]),
-			new DoubleTag("gravity", $vehicleData["gravity"]),
+			new FloatTag("gravity", $vehicleData["gravity"]),
 			new FloatTag("scale", $vehicleData["scale"]),
-			new DoubleTag("baseOffset", $vehicleData["baseOffset"]),
-			new DoubleTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
-			new DoubleTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
-			new DoubleTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
-			new DoubleTag("rightSpeed", $vehicleData["directionMultiplier"]["right"]),
+			new FloatTag("baseOffset", $vehicleData["baseOffset"]),
+			new FloatTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
+			new FloatTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
+			new FloatTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
+			new FloatTag("rightSpeed", $vehicleData["directionMultiplier"]["right"]),
 			new ListTag("bbox", [
 				new FloatTag("x", $vehicleData["BBox"][0]),
 				new FloatTag("y", $vehicleData["BBox"][1]),
@@ -281,7 +284,7 @@ class Factory{
 
 	/**
 	 * Retrieve all Vehicle data.
-	 * @return mixed[]
+	 * @return array<string, mixed[]>
 	 */
 	public function getAllVehicleData(){
 		return $this->vehicles;

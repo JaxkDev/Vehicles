@@ -19,6 +19,7 @@ use pocketmine\Player;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
+use pocketmine\utils\UUID;
 
 class Vehicle extends VehicleBase
 {
@@ -111,6 +112,9 @@ class Vehicle extends VehicleBase
 		return true;
 	}
 
+	/**
+	 * @return Player[]
+	 */
 	public function getPassengers(){
 		return $this->passengers;
 	}
@@ -149,6 +153,11 @@ class Vehicle extends VehicleBase
 		return false;
 	}
 
+	/**
+	 * @param Player|UUID $player
+	 * @param string|null $message
+	 * @return bool
+	 */
 	public function removePassenger($player, ?string $message = null): bool{
 		if($player instanceof Player) $player = $player->getUniqueId();
 		foreach(array_keys($this->passengers) as $i){

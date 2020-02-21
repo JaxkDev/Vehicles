@@ -26,13 +26,16 @@ use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class Main extends PluginBase{
 
+	/** @var self */
 	private static $instance;
 
 	/** @var String|Vehicle[] */
 	public static $inVehicle = [];
 
+	/** @var int */
 	public static $vehicleDataVersion = 1;
 
+	/** @var string */
 	public static $prefix = C::GRAY."[".C::AQUA."Vehicles".C::GRAY."] ".C::GOLD."> ".C::RESET;
 
 	/** @var CommandHandler */

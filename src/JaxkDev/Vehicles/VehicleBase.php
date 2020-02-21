@@ -25,7 +25,6 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\entity\Rideable;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
@@ -48,12 +47,17 @@ class VehicleBase extends Entity implements Rideable
 	/** @var UUID|null */
 	protected $uuid = null;
 
-	public $gravity = 1;
+	/** @var float */
+	public $gravity = 1.0;
 
-	public $width = 1;
-	public $height = 1;
+	/** @var float */
+	public $width = 1.0;
 
-	public $baseOffset = 1;
+	/** @var float */
+	public $height = 1.0;
+
+	/** @var float */
+	public $baseOffset = 1.0;
 
 	//---------------------
 
@@ -78,9 +82,19 @@ class VehicleBase extends Entity implements Rideable
 	/** @var SkinData|null */
 	private $design = null;
 
+	/** @var float[] */
 	private $bbox = [0,0,0,0,0,0];
 
+	/**
+	 *  @var array
+	 *  @phpstan-var array<string, null|Vector3|array<Vector3>>
+	 */
 	private $seats = ["driver" => null, "passengers" => []];
+
+	/**
+	 * @var array
+	 * @phpstan-var array<string, float|null>
+	 */
 	private $speed = ["forward" => null, "backward" => null, "left" => null, "right" => null];
 
 	public function __construct(Level $level, CompoundTag $nbt)
@@ -111,14 +125,14 @@ class VehicleBase extends Entity implements Rideable
 		$this->designName = $data->getString("design");
 		if($this->designName === null) throw new VehicleException("Vehicle '{$this->name}' has no design stored.");
 		$this->design = $this->plugin->factory->getDesign($this->designName);
-		$this->gravity = $data->getDouble("gravity", 1.0);
+		$this->gravity = $data->getFloat("gravity", 1.0);
 		$this->scale = $data->getFloat("scale", 1.0);
-		$this->baseOffset = $data->getDouble("baseOffset", 1.0);
+		$this->baseOffset = $data->getFloat("baseOffset", 1.0);
 
-		$this->speed["forward"] = $data->getDouble("forwardSpeed", 1.0);
-		$this->speed["backward"] = $data->getDouble("backwardSpeed", 1.0);
-		$this->speed["left"] = $data->getDouble("leftSpeed", 1.0);
-		$this->speed["right"] = $data->getDouble("rightSpeed", 1.0);
+		$this->speed["forward"] = $data->getFloat("forwardSpeed", 1.0);
+		$this->speed["backward"] = $data->getFloat("backwardSpeed", 1.0);
+		$this->speed["left"] = $data->getFloat("leftSpeed", 1.0);
+		$this->speed["right"] = $data->getFloat("rightSpeed", 1.0);
 
 		$this->bbox = $data->getListTag("bbox")->getAllValues();
 
@@ -158,13 +172,13 @@ class VehicleBase extends Entity implements Rideable
 			new StringTag("uuid", $this->uuid->toString()),
 			new StringTag("name", $this->name),
 			new StringTag("design", $this->designName),
-			new DoubleTag("gravity", $this->gravity),
+			new FloatTag("gravity", $this->gravity),
 			new FloatTag("scale", $this->scale),
-			new DoubleTag("baseOffset", $this->baseOffset),
-			new DoubleTag("forwardSpeed", $this->speed["forward"]),
-			new DoubleTag("backwardSpeed", $this->speed["backward"]),
-			new DoubleTag("leftSpeed", $this->speed["left"]),
-			new DoubleTag("rightSpeed", $this->speed["right"]),
+			new FloatTag("baseOffset", $this->baseOffset),
+			new FloatTag("forwardSpeed", $this->speed["forward"]),
+			new FloatTag("backwardSpeed", $this->speed["backward"]),
+			new FloatTag("leftSpeed", $this->speed["left"]),
+			new FloatTag("rightSpeed", $this->speed["right"]),
 			new ListTag("bbox", [
 				new FloatTag("x", $this->bbox[0]),
 				new FloatTag("y", $this->bbox[1]),
@@ -213,11 +227,17 @@ class VehicleBase extends Entity implements Rideable
 		return $this->design;
 	}
 
-	public function getVehicleSpeed(): array{
+	/**
+	 * @return array<string, float|null>
+	 */
+	public function getVehicleSpeed(){
 		return $this->speed;
 	}
 
-	public function getVehicleSeats(): array{
+	/**
+	 * @return array<string, null|Vector3|array<Vector3>>
+	 */
+	public function getVehicleSeats(){
 		return $this->seats;
 	}
 
