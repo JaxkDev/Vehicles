@@ -3,43 +3,44 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: Jackthehaxk21#8860
+ * Discord :: JaxkDev#8860
  * Email   :: JaxkDev@gmail.com
  */
 
 declare(strict_types=1);
 
-namespace JaxkDev\Vehicles;
+namespace JaxkDev\Vehicles\Handlers;
 
-use pocketmine\event\entity\EntityLevelChangeEvent;
-use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\player\PlayerQuitEvent;
+use JaxkDev\Vehicles\Vehicle;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
-use JaxkDev\Vehicles\Vehicle\Vehicle; //Only 3 'vehicle's in one namespace *HAHA*
+
+use JaxkDev\Vehicles\Main;
 
 class EventHandler implements Listener
 {
 	/** @var Main */
 	public $plugin;
 
-
 	public function __construct(Main $plugin)
 	{
 		$this->plugin = $plugin;
 	}
 
-	public function onPlayerLeaveEvent(PlayerQuitEvent $event){
+	public function onPlayerLeaveEvent(PlayerQuitEvent $event): void{
 		$player = $event->getPlayer();
 		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
 			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
@@ -47,7 +48,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event){
+	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event): void{
 		if($event->getEntity() instanceof Player){
 			/** @var Player $player */
 			$player = $event->getEntity();
@@ -59,7 +60,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerDeathEvent(PlayerDeathEvent $event){
+	public function onPlayerDeathEvent(PlayerDeathEvent $event): void{
 		$player = $event->getPlayer();
 		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
 			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
@@ -68,7 +69,7 @@ class EventHandler implements Listener
 		}
 	}
 
-	public function onPlayerTeleportEvent(EntityTeleportEvent $event){
+	public function onPlayerTeleportEvent(EntityTeleportEvent $event): void{
 		if($event->getEntity() instanceof Player){
 			/** @var Player $player */
 			$player = $event->getEntity();
@@ -85,7 +86,7 @@ class EventHandler implements Listener
 	 * @priority Lowest
 	 * Some interruption by MultiWorld
 	 */
-	public function onEntityDamageEvent(EntityDamageByEntityEvent $event){
+	public function onEntityDamageEvent(EntityDamageByEntityEvent $event): void{
 		if($event->getEntity() instanceof Vehicle){
 			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
 			if(!($event->getDamager() instanceof Player)) return;
@@ -95,80 +96,23 @@ class EventHandler implements Listener
 			$entity = $event->getEntity();
 			if(($index = array_search(strtolower($attacker->getName()),array_keys($this->plugin->interactCommands))) !== false){
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
+				/** @noinspection PhpUnusedLocalVariableInspection */
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
 				switch($command){
-					case 'lock':
-						if($entity instanceof Vehicle){
-							if($entity->getOwner() === null){
-								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							if($attacker->getUniqueId()->equals($entity->getOwner())){
-								if($entity->isLocked()){
-									$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle is already locked.");
-									unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-									break;
-								}
-								$entity->setLocked(true);
-								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been locked, no one may drive/get in the vehicle.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
-						}
-						break;
-					case 'un-lock':
-						if($entity instanceof Vehicle){
-							if($entity->getOwner() === null){
-								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							if($attacker->getUniqueId()->equals($entity->getOwner())){
-								if(!$entity->isLocked()){
-									$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle is already un-locked.");
-									unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-									break;
-								}
-								$entity->setLocked(false);
-								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been un-locked, anyone may now drive/get in the vehicle.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
-						}
-						break;
-					case 'giveaway':
-						if($entity instanceof Vehicle){
-							if($entity->getOwner() === null){
-								$attacker->sendMessage($this->plugin->prefix.C::RED."This vehicle has no owner.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							if($attacker->getUniqueId()->equals($entity->getOwner())){
-								$entity->removeOwner();
-								$attacker->sendMessage($this->plugin->prefix.C::GOLD."This vehicle has been given away, next person to drive it will become owner.");
-								unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
-								break;
-							}
-							$attacker->sendMessage($this->plugin->prefix.C::RED."You are not the owner of this vehicle.");
-						}
-						break;
 					case 'remove':
 						if($entity instanceof Vehicle){
-							if(!$entity->isEmpty()) {
-								$attacker->sendMessage($this->plugin->prefix.C::RED."You cannot remove a vehicle with players in it.");
+							if(!$entity->isVehicleEmpty()) {
+								$attacker->sendMessage(Main::$prefix.C::RED."You cannot remove a vehicle with players in it.");
 							}
 							else {
 								$entity->close();
-								$attacker->sendMessage($this->plugin->prefix . "'" . $entity->getName() . "' has been removed.");
+								$attacker->sendMessage(Main::$prefix . "'" . $entity->getVehicleName() . "' has been removed.");
 							}
 						}
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
 						break;
 					default:
-						$this->plugin->getLogger()->warning("Unknown interact command '{$command}'");
+						$this->plugin->getLogger()->error("Unknown interact command '{$command}'");
 				}
 			} else {
 				if($entity instanceof Vehicle) {
@@ -177,7 +121,11 @@ class EventHandler implements Listener
 						return;
 					}
 					if($entity->getDriver() === null) $entity->setDriver($attacker);
-					else $entity->setPassenger($attacker);
+					else{
+						if(!$entity->addPassenger($attacker)){
+							$attacker->sendMessage(C::RED."This vehicle is full.");
+						}
+					}
 				}
 			}
 		}
@@ -187,7 +135,7 @@ class EventHandler implements Listener
 	 * Handle a players motion when driving.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onPlayerInputPacket($event){
+	public function onPlayerInputPacket($event): void{
 		/** @var PlayerInputPacket $packet */
 		$packet = $event->getPacket();
 		$player = $event->getPlayer();
@@ -208,7 +156,7 @@ class EventHandler implements Listener
 	 * Handle a players interact.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onInteractPacket($event){
+	public function onInteractPacket($event): void{
 		/** @var InteractPacket $packet */
 		$packet = $event->getPacket();
 
@@ -226,7 +174,7 @@ class EventHandler implements Listener
 	 * Handle InventoryTransaction.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onInventoryTransactionPacket($event){
+	public function onInventoryTransactionPacket($event): void{
 		/** @var InventoryTransactionPacket $packet */
 		$packet = $event->getPacket();
 
@@ -235,7 +183,7 @@ class EventHandler implements Listener
 			$vehicle = $player->getLevel()->getEntity($packet->trData->entityRuntimeId);
 			if($vehicle instanceof Vehicle){
 				if($packet->trData->actionType === InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT) {
-					if($vehicle->hasDriver()) $vehicle->setPassenger($player);
+					if($vehicle->getDriver() !== null) $vehicle->addPassenger($player);
 					else $vehicle->setDriver($player);
 					$event->setCancelled();
 				}
@@ -246,7 +194,7 @@ class EventHandler implements Listener
 	/**
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onDataPacketEvent(DataPacketReceiveEvent $event){
+	public function onDataPacketEvent(DataPacketReceiveEvent $event): void{
 		$packet = $event->getPacket();
 		$pid = $packet->pid();
 		switch($pid){
