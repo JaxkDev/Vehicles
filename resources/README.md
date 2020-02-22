@@ -1,6 +1,7 @@
 Vehicle data layouts.
 --
 Basic layout of the directory is as follows:
+
 ```
 plugin_data
  - Vehicles
@@ -19,6 +20,7 @@ Layout of the Vehicles data (`plugin_data/Vehicles/Vehicles/*.json`):
 A skeleton file for this data can be found at `plugin_data/Vehicles/skeleton.json`
 
 (`//` Comments cannot be in the .json they are used here just for help in pointing things out to the user)
+
 ```
 {
   "name": "VehicleName", // No spaces in vehicle name.
