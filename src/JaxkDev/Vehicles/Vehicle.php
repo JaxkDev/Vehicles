@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use LogicException;
+use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\Player;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
@@ -69,6 +70,18 @@ class Vehicle extends VehicleBase
 			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["backward"]);
 		}
 	}
+
+    protected function broadcastMovement(bool $teleport = false) : void{
+        $pk = new MovePlayerPacket();
+        $pk->entityRuntimeId = $this->getId();
+        $pk->position = $this->getOffsetPosition($this->getPosition());
+        $pk->pitch = $this->getPitch();
+        $pk->headYaw = $this->getYaw();
+        $pk->yaw = $this->getYaw();
+        $pk->mode = MovePlayerPacket::MODE_NORMAL;
+
+        $this->getLevel()->broadcastPacketToViewers($this->getPosition(), $pk);
+    }
 
 	public function isVehicleEmpty(): bool{
 		return ($this->driver === null && count($this->passengers) === 0);
