@@ -6,7 +6,7 @@
  * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: JaxkDev#8860
+ * Discord :: JaxkDev#0001
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -164,10 +164,13 @@ class Factory{
 			if(($seatPositions["driver"] ?? null) === null) throw new VehicleException("Vehicle {$name} in {$fName} has no driver seat position specified .");
 			if(count($seatPositions["driver"]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has an invalid driver seat position ( format: [X,Y,Z] )");
 			if(($seatPositions["passengers"] ?? null) === null){
-				$seatPositions["passengers"] = []; //Default
+				$data["seatPositions"]["passengers"] = []; //Default
 				$this->plugin->getLogger()->warning("Vehicle {$name} in {$fName} has no passenger seats, reverting to default of '[]'");
-			} else if(!is_array($seatPositions["passengers"]) || count($seatPositions["passengers"][0]) !== 3) throw new VehicleException("Vehicle {$name} in {$fName} has invalid passenger seat positions (format: [[X,Y,Z],[X,Y,Z]])");
-
+			} else{
+				if(!is_array($seatPositions["passengers"]) || (
+				count($seatPositions["passengers"]) !== 0 && 
+				count($seatPositions["passengers"][0]) !== 3)) throw new VehicleException("Vehicle {$name} in {$fName} has invalid passenger seat positions ( format: [[x,y,z],[x,y,z] etc... ] ");
+			}
 
 			if(($data["BBox"] ?? null) === null){
 				$data["BBox"] = [0,0,0,1,1,1];

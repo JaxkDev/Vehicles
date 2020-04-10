@@ -6,7 +6,7 @@
  * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: JaxkDev#8860
+ * Discord :: JaxkDev#0001
  * Email   :: JaxkDev@gmail.com
  */
 
