@@ -1,8 +1,8 @@
 name: Vehicles
 author: JaxkDev
-version: 0.1.2
+version: 0.1.3
 api: [3.11.0]
-mcpe-protocol: [389]
+mcpe-protocol: [389,390]
 main: JaxkDev\Vehicles\Main
 website: "https://github.com/JaxkDev/Vehicles"
 description: "[W.I.P] PocketMine-MP plugin that brings vehicles to your server !"
