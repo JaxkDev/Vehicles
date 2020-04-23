@@ -105,6 +105,7 @@ class EventHandler implements Listener
 								$attacker->sendMessage(Main::$prefix.C::RED."You cannot remove a vehicle with players in it.");
 							}
 							else {
+								$event->setCancelled();
 								$entity->close();
 								$attacker->sendMessage(Main::$prefix . "'" . $entity->getVehicleName() . "' has been removed.");
 							}
