@@ -95,7 +95,6 @@ class CommandHandler
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");
 					return;
 				}
-				$sender->sendMessage($this->prefix.C::RED."[WARNING] For the vehicle to show you must disable 'Only allow trusted skins' in you minecraft settings.");
 				$sender->sendMessage($this->prefix.C::GOLD."\"".$args[0]."\" Created.");
 				break;
 			case 'del':

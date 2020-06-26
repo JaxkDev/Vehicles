@@ -29,6 +29,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
+use pocketmine\network\mcpe\protocol\types\SkinImage;
 use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
 
 use JaxkDev\Vehicles\Exceptions\DesignException;
@@ -259,15 +260,15 @@ class Factory{
 				throw new DesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
 			}
 
-			$oldSkin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
+			$skin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
 			try{
-				$oldSkin->validate();
+				$skin->validate();
 			} catch (InvalidArgumentException $e){
 				throw new DesignException("Failed to register design '{$name}', Design data (skin/UV) is invalid: {$e->getMessage()}");
 			}
 
 			// MCPE 1.13.0 change to SkinData:
-			$this->designs[$name] = SkinAdapterSingleton::get()->toSkinData($oldSkin);
+			$this->designs[$name] = $this->skinToSkinData($skin);
 
 			$this->plugin->getLogger()->debug("Successfully registered design '{$name}'");
 		}
@@ -356,5 +357,35 @@ class Factory{
 			throw new DesignException("Unknown design type '{$type}' received.");
 			//Should never get here unless using as API.
 		}
+	}
+	
+	/**
+	 * Copy of pmmp's legacy converter except sets skin to trusted, this is used instead of changing client settings.
+	 */
+	private function skinToSkinData(Skin $skin): SkinData{
+		$capeData = $skin->getCapeData();
+		$capeImage = $capeData === "" ? new SkinImage(0, 0, "") : new SkinImage(32, 64, $capeData);
+		$geometryName = $skin->getGeometryName();
+		if($geometryName === ""){
+			$geometryName = "geometry.humanoid.custom";
+		}
+		return new SkinData(
+			$skin->getSkinId(),
+			json_encode(["geometry" => ["default" => $geometryName]]),
+			SkinImage::fromLegacy($skin->getSkinData()), [],
+			$capeImage,
+			$skin->getGeometryData(),
+			"",
+			false,
+			false,
+			false,
+			"",
+			null,
+			"wide",
+			"",
+			[],
+			[],
+			true
+		);
 	}
 }
