@@ -286,7 +286,7 @@ class VehicleBase extends Entity implements Rideable
 				$player->spawnTo($viewer);
 			}
 			$pk = new SetActorLinkPacket();
-			$pk->link = new EntityLink($this->getId(), $player->getId(), $type);
+			$pk->link = new EntityLink($this->getId(), $player->getId(), $type, true, true);
 			$viewer->sendDataPacket($pk);
 		}
 	}

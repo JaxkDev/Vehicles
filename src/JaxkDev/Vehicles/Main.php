@@ -84,6 +84,8 @@ class Main extends PluginBase{
 		}
 
 		$this->getLogger()->debug("Finished loading resources.");
+		
+		$this->getLogger()->warning("[Important] For the vehicles to show to users, the users must disable 'Only allow trusted skins' in their minecraft profile settings.");
 	}
 
 	public function onEnable(): void{
