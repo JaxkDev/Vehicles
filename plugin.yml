@@ -1,7 +1,7 @@
 name: Vehicles
 author: JaxkDev
-version: 0.1.6
-api: [3.11.0]
+version: 0.2.0
+api: 4.0.0
 mcpe-protocol: [407]
 main: JaxkDev\Vehicles\Main
 website: "https://github.com/JaxkDev/Vehicles"
