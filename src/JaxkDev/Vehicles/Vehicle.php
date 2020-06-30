@@ -15,12 +15,14 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use LogicException;
-use pocketmine\network\mcpe\protocol\MovePlayerPacket;
-use pocketmine\Player;
-use pocketmine\level\Level;
+use pocketmine\uuid\UUID;
+use pocketmine\player\Player;
+use pocketmine\entity\Location;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\EntityLink;
-use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\MovePlayerPacket;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLink;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 
 class Vehicle extends VehicleBase
 {
@@ -32,11 +34,11 @@ class Vehicle extends VehicleBase
 
 	/**
 	 * Vehicles constructor.
-	 * @param Level $level
+	 * @param Location $loc
 	 * @param CompoundTag $nbt
 	 */
-	public function __construct(Level $level, CompoundTag $nbt){
-		parent::__construct($level, $nbt);
+	public function __construct(Location $loc, CompoundTag $nbt){
+		parent::__construct($loc, $nbt);
 
 		$this->setCanSaveWithChunk(true);
 		$this->saveNBT();
@@ -56,15 +58,15 @@ class Vehicle extends VehicleBase
 		//+x = left (+1/+0.7)
 		//-x = right (-1/-0.7)
 		if($x !== 0){
-			if($x > 0) $this->yaw -= $x*$this->getVehicleSpeed()["left"];
-			if($x < 0) $this->yaw -= $x*$this->getVehicleSpeed()["right"];
+			if($x > 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["left"];
+			if($x < 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["right"];
 			$this->motion = $this->getDirectionVector();
 		}
 
 		if($y > 0){
 			//forward
 			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["forward"]);
-			$this->yaw = $this->driver->getYaw();// - turn based on players rotation
+			$this->location->yaw = $this->driver->getLocation()->getYaw();// - turn based on players rotation
 		} elseif ($y < 0){
 			//reverse
 			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["backward"]);
@@ -75,12 +77,12 @@ class Vehicle extends VehicleBase
         $pk = new MovePlayerPacket();
         $pk->entityRuntimeId = $this->getId();
         $pk->position = $this->getOffsetPosition($this->getPosition());
-        $pk->pitch = $this->getPitch();
-        $pk->headYaw = $this->getYaw();
-        $pk->yaw = $this->getYaw();
+        $pk->pitch = $this->getLocation()->getPitch();
+        $pk->headYaw = $this->getLocation()->getYaw();
+        $pk->yaw = $this->getLocation()->getYaw();
         $pk->mode = MovePlayerPacket::MODE_NORMAL;
 
-        $this->getLevel()->broadcastPacketToViewers($this->getPosition(), $pk);
+        $this->getWorld()->broadcastPacketToViewers($this->getPosition(), $pk);
     }
 
 	public function isVehicleEmpty(): bool{
@@ -97,14 +99,15 @@ class Vehicle extends VehicleBase
 			else return false;
 		}
 
-		$player->setGenericFlag(self::DATA_FLAG_RIDING, true);
-		$player->setGenericFlag(self::DATA_FLAG_SITTING, true);
-		$player->setGenericFlag(self::DATA_FLAG_WASD_CONTROLLED, true);
-		$player->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getVehicleDriverSeat());
+		$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::RIDING, true);
+		$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SITTING, true);
+		$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::WASD_CONTROLLED, true);
+		$player->getNetworkProperties()->setVector3(EntityMetadataProperties::RIDER_SEAT_POSITION, $this->getVehicleDriverSeat());
+		// TODO Possibly limit rotation.
 
-		$this->setGenericFlag(self::DATA_FLAG_SADDLED, true);
+		$this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SADDLED, true);
 		$this->driver = $player;
-		Main::$inVehicle[$this->driver->getRawUniqueId()] = $this;
+		Main::$inVehicle[$this->driver->getUniqueId()->toString()] = $this;
 		$player->sendMessage("You are now driving this vehicle.");
 		$this->broadcastLink($this->driver);
 		$player->sendTip("Sneak/Jump to leave the vehicle.");
@@ -113,14 +116,14 @@ class Vehicle extends VehicleBase
 
 	public function removeDriver(?string $message = "You are no longer driving this vehicle."): bool{
 		if($this->driver === null) return false;
-		$this->driver->setGenericFlag(self::DATA_FLAG_RIDING, false);
-		$this->driver->setGenericFlag(self::DATA_FLAG_SITTING, false);
-		$this->driver->setGenericFlag(self::DATA_FLAG_WASD_CONTROLLED, false);
+		$this->driver->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::RIDING, false);
+		$this->driver->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SITTING, false);
+		$this->driver->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::WASD_CONTROLLED, false);
 
-		$this->setGenericFlag(self::DATA_FLAG_SADDLED, false);
+		$this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SADDLED, false);
 		if($message !== null) $this->driver->sendMessage($message);
 		$this->broadcastLink($this->driver, EntityLink::TYPE_REMOVE);
-		unset(Main::$inVehicle[$this->driver->getRawUniqueId()]);
+		unset(Main::$inVehicle[$this->driver->getUniqueId()->toString()]);
 		$this->driver = null;
 		return true;
 	}
@@ -143,10 +146,10 @@ class Vehicle extends VehicleBase
 			if($seat === null) return false; //No space...
 		}
 		$this->passengers[$seat] = $player;
-		Main::$inVehicle[$player->getRawUniqueId()] = $this;
-		$player->setGenericFlag(self::DATA_FLAG_RIDING, true);
-		$player->setGenericFlag(self::DATA_FLAG_SITTING, true);
-		$player->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getVehiclePassengerSeats()[$seat]);
+		Main::$inVehicle[$player->getUniqueId()->toString()] = $this;
+		$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::RIDING, true);
+		$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SITTING, true);
+		$player->getNetworkProperties()->setVector3(EntityMetadataProperties::RIDER_SEAT_POSITION, $this->getVehiclePassengerSeats()[$seat]);
 		$this->broadcastLink($player, EntityLink::TYPE_PASSENGER);
 		$player->sendTip("Sneak/Jump to leave the vehicle.");
 		return true;
@@ -156,9 +159,9 @@ class Vehicle extends VehicleBase
 		if(isset($this->passengers[$seat])){
 			$player = $this->passengers[$seat];
 			unset($this->passengers[$seat]);
-			unset(Main::$inVehicle[$player->getRawUniqueId()]);
-			$player->setGenericFlag(self::DATA_FLAG_RIDING, false);
-			$player->setGenericFlag(self::DATA_FLAG_SITTING, false);
+			unset(Main::$inVehicle[$player->getUniqueId()->toString()]);
+			$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::RIDING, false);
+			$player->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::SITTING, false);
 			$this->broadcastLink($player, EntityLink::TYPE_REMOVE);
 			if($message !== null) $player->sendMessage($message);
 			return true;

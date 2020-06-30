@@ -15,22 +15,21 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use DirectoryIterator;
-use InvalidArgumentException;
 
-use pocketmine\entity\Entity;
+
+use pocketmine\world\World;
 use pocketmine\entity\Skin;
-use pocketmine\level\Level;
-use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
+use pocketmine\entity\Location;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\entity\EntityFactory;
 use pocketmine\plugin\PluginException;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\InvalidSkinException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinImage;
-use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
 
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
@@ -47,83 +46,84 @@ class Factory{
 
 	public function __construct(Main $plugin)
 	{
-		Entity::registerEntity(Vehicle::class,false, ["Vehicle"]);
+		EntityFactory::getInstance()->register(Vehicle::class, function(World $world, CompoundTag $nbt): Vehicle{
+			return new Vehicle(EntityDataHelper::parseLocation($nbt, $world), $nbt);
+		}, ["Vehicle"]);
 		$this->plugin = $plugin;
 	}
 
 	/**
 	 * Spawns a vehicle, with specified data.
 	 * @param mixed[] $vehicleData
-	 * @param Level $level
-	 * @param Vector3 $pos
+	 * @param Location $loc
 	 * @return Vehicle|null
 	 */
-	public function spawnVehicle($vehicleData, Level $level, Vector3 $pos): ?Vehicle{
+	public function spawnVehicle($vehicleData, Location $loc): ?Vehicle{
 
-		$passengerSeats = [];
+		var_dump("spawn");
+
+		$passengerSeats = new ListTag();
 		foreach($vehicleData["seatPositions"]["passengers"] as $seat){
-			$passengerSeats[] = new ListTag("", [
-				new FloatTag("x", $seat[0]),
-				new FloatTag("y", $seat[1]),
-				new FloatTag("z", $seat[2])
-			]);
+			$passengerSeats->push(new ListTag([
+				new FloatTag($seat[0]),
+				new FloatTag($seat[1]),
+				new FloatTag($seat[2])
+			]));
 		}
 
-		$vehicleNBT = new CompoundTag("vehicleData", [
-			new IntTag("type", $vehicleData["type"]),
-			new StringTag("name", $vehicleData["name"]),
-			new StringTag("design", $vehicleData["design"]),
-			new FloatTag("gravity", $vehicleData["gravity"]),
-			new FloatTag("scale", $vehicleData["scale"]),
-			new FloatTag("baseOffset", $vehicleData["baseOffset"]),
-			new FloatTag("forwardSpeed", $vehicleData["speedMultiplier"]["forward"]),
-			new FloatTag("backwardSpeed", $vehicleData["speedMultiplier"]["backward"]),
-			new FloatTag("leftSpeed", $vehicleData["directionMultiplier"]["left"]),
-			new FloatTag("rightSpeed", $vehicleData["directionMultiplier"]["right"]),
-			new ListTag("bbox", [
-				new FloatTag("x", $vehicleData["BBox"][0]),
-				new FloatTag("y", $vehicleData["BBox"][1]),
-				new FloatTag("z", $vehicleData["BBox"][2]),
-				new FloatTag("x2", $vehicleData["BBox"][3]),
-				new FloatTag("y2", $vehicleData["BBox"][4]),
-				new FloatTag("z2", $vehicleData["BBox"][5]),
-			]),
-			new ListTag("driverSeat", [
-				new FloatTag("x", $vehicleData["seatPositions"]["driver"][0]),
-				new FloatTag("y", $vehicleData["seatPositions"]["driver"][1]),
-				new FloatTag("z", $vehicleData["seatPositions"]["driver"][2]),
-			]),
-			new ListTag("passengerSeats", $passengerSeats)
-		]);
+		$vehicleNBT = new CompoundTag();
+		$vehicleNBT->setInt("type", $vehicleData["type"])
+			->setString("name", $vehicleData["name"])
+			->setString("design", $vehicleData["design"])
+			->setFloat("gravity", $vehicleData["gravity"])
+			->setFloat("scale", $vehicleData["scale"])
+			->setFloat("gravity", $vehicleData["gravity"])
+			->setFloat("scale", $vehicleData["scale"])
+			->setFloat("baseOffset", $vehicleData["baseOffset"])
+			->setFloat("forwardSpeed", $vehicleData["speedMultiplier"]["forward"])
+			->setFloat("backwardSpeed", $vehicleData["speedMultiplier"]["backward"])
+			->setFloat("leftSpeed", $vehicleData["directionMultiplier"]["left"])
+			->setFloat("rightSpeed", $vehicleData["directionMultiplier"]["right"])
+			->setTag("bbox", new ListTag([
+				new FloatTag($vehicleData["BBox"][0]),
+				new FloatTag($vehicleData["BBox"][1]),
+				new FloatTag($vehicleData["BBox"][2]),
+				new FloatTag($vehicleData["BBox"][3]),
+				new FloatTag($vehicleData["BBox"][4]),
+				new FloatTag($vehicleData["BBox"][5]),
+			]))
+			->setTag("driverSeat", new ListTag([
+				new FloatTag($vehicleData["seatPositions"]["driver"][0]),
+				new FloatTag($vehicleData["seatPositions"]["driver"][1]),
+				new FloatTag($vehicleData["seatPositions"]["driver"][2]),
+			]))
+			->setTag("passengerSeats", $passengerSeats);
 
+		$nbt = new CompoundTag();
+		$nbt->setTag("vehicleData", $vehicleNBT)
+			->setTag("Pos", new ListTag([
+				new DoubleTag($loc->x),
+				new DoubleTag($loc->y),
+				new DoubleTag($loc->z)
+			]))
+			->setTag("Motion", new ListTag([
+				new DoubleTag(0.0),
+				new DoubleTag(0.0),
+				new DoubleTag(0.0)
+			]))
+			->setTag("Rotation", new ListTag([
+				new FloatTag(0.0),
+				new FloatTag(0.0)
+			]))
+			->setInt("vehicle", Main::$vehicleDataVersion);
 
-		$nbt = new CompoundTag("", [
-			new ListTag("Pos", [
-				new DoubleTag("", $pos->x),
-				new DoubleTag("", $pos->y),
-				new DoubleTag("", $pos->z)
-			]),
-			new ListTag("Motion", [
-				new DoubleTag("", 0.0),
-				new DoubleTag("", 0.0),
-				new DoubleTag("", 0.0)
-			]),
-			new ListTag("Rotation", [
-				new FloatTag("", 0.0),
-				new FloatTag("", 0.0)
-			]),
-			new IntTag("vehicle", Main::$vehicleDataVersion),
-			$vehicleNBT
-		]);
-
-		/** @var Vehicle $entity */
-		$entity = Entity::createEntity("Vehicle", $level, $nbt);
+		$entity = new Vehicle($loc, $nbt);
 
 		$this->plugin->getLogger()->debug("Spawning vehicle.");
 
 		$entity->spawnToAll();
 
-		$this->plugin->getLogger()->debug("Vehicle '{$vehicleData["name"]}' spawned at '{$pos}' in level '".$level->getName()."'");
+		$this->plugin->getLogger()->debug("Vehicle '{$vehicleData["name"]}' spawned.");
 
 		return $entity;
 	}
@@ -260,14 +260,13 @@ class Factory{
 				throw new DesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
 			}
 
-			$skin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
 			try{
-				$skin->validate();
-			} catch (InvalidArgumentException $e){
+				$skin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
+			} catch (InvalidSkinException $e){
 				throw new DesignException("Failed to register design '{$name}', Design data (skin/UV) is invalid: {$e->getMessage()}");
 			}
 
-			// MCPE 1.13.0 change to SkinData:
+			// MCPE 1.13.0/1.16.0 changes to SkinData:
 			$this->designs[$name] = $this->skinToSkinData($skin);
 
 			$this->plugin->getLogger()->debug("Successfully registered design '{$name}'");
@@ -319,6 +318,7 @@ class Factory{
 	 * @param string $path
 	 * @return string|null RGBA Bytes to use.
 	 * @throws PluginException|DesignException
+	 * @noinspection PhpComposerExtensionStubsInspection
 	 */
 	public function readDesignFile(string $path): ?string{
 		$type = pathinfo($path, PATHINFO_EXTENSION);
