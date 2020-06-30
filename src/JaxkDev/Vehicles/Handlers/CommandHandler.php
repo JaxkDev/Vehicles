@@ -89,7 +89,7 @@ class CommandHandler
 					return;
 				}
 				if($this->plugin->factory->getVehicleData($args[0]) !== null){
-					$this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData($args[0]), $sender->getLevel(), $sender->asVector3());
+					$this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData($args[0]), $sender->getLocation());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");

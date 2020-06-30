@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019-2021 JaxkDev
+ * Copyright (C) 2019-2020 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: JaxkDev#2698
+ * Discord :: JaxkDev#0001
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -15,13 +15,12 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Handlers;
 
 use JaxkDev\Vehicles\Vehicle;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -43,28 +42,16 @@ class EventHandler implements Listener
 
 	public function onPlayerLeaveEvent(PlayerQuitEvent $event): void{
 		$player = $event->getPlayer();
-		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
-			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
+		if(isset(Main::$inVehicle[$player->getUniqueId()->toString()])){
+			Main::$inVehicle[$player->getUniqueId()->toString()]->removePlayer($player);
 			$this->plugin->getLogger()->debug($player->getName()." Has left the server while in a vehicle, they have been kicked from the vehicle.");
-		}
-	}
-
-	public function onPlayerChangeLevelEvent(EntityLevelChangeEvent $event): void{
-		if($event->getEntity() instanceof Player){
-			/** @var Player $player */
-			$player = $event->getEntity();
-			if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
-				Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
-				$player->sendMessage(C::RED."You cannot change level with a vehicle, you have been kicked from your vehicle.");
-				$this->plugin->getLogger()->debug($player->getName()." Has changed level while in a vehicle, they have been kicked from the vehicle.");
-			}
 		}
 	}
 
 	public function onPlayerDeathEvent(PlayerDeathEvent $event): void{
 		$player = $event->getPlayer();
-		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
-			Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
+		if(isset(Main::$inVehicle[$player->getUniqueId()->toString()])){
+			Main::$inVehicle[$player->getUniqueId()->toString()]->removePlayer($player);
 			$player->sendMessage(C::RED."You were killed so you have been kicked from your vehicle.");
 			$this->plugin->getLogger()->debug($player->getName()." Has died while in a vehicle, they have been kicked from the vehicle.");
 		}
@@ -74,8 +61,8 @@ class EventHandler implements Listener
 		if($event->getEntity() instanceof Player){
 			/** @var Player $player */
 			$player = $event->getEntity();
-			if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
-				Main::$inVehicle[$player->getRawUniqueId()]->removePlayer($player);
+			if(isset(Main::$inVehicle[$player->getUniqueId()->toString()])){
+				Main::$inVehicle[$player->getUniqueId()->toString()]->removePlayer($player);
 				$player->sendMessage(C::RED."You cannot teleport with a vehicle, you have been kicked from your vehicle.");
 				$this->plugin->getLogger()->debug($player->getName()." Has teleported while in a vehicle, they have been kicked from their vehicle.");
 			}
@@ -139,17 +126,17 @@ class EventHandler implements Listener
 	public function onPlayerInputPacket($event): void{
 		/** @var PlayerInputPacket $packet */
 		$packet = $event->getPacket();
-		$player = $event->getPlayer();
+		$player = $event->getOrigin();
 
-		if(isset(Main::$inVehicle[$player->getRawUniqueId()])){
+		if(isset(Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()])){
 			$event->setCancelled();
 			if($packet->motionX === 0.0 and $packet->motionY === 0.0) {
 				return;
 			} //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
 			/** @var Vehicle $vehicle */
-			$vehicle = Main::$inVehicle[$player->getRawUniqueId()];
+			$vehicle = Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()];
 			if($vehicle->getDriver() === null) return;
-			if($vehicle->getDriver()->getUniqueId()->equals($player->getUniqueId())) $vehicle->updateMotion($packet->motionX, $packet->motionY);
+			if($vehicle->getDriver()->getUniqueId()->equals($player->getPlayer()->getUniqueId())) $vehicle->updateMotion($packet->motionX, $packet->motionY);
 		}
 	}
 
@@ -162,10 +149,10 @@ class EventHandler implements Listener
 		$packet = $event->getPacket();
 
 		if($packet->action === InteractPacket::ACTION_LEAVE_VEHICLE){
-			$player = $event->getPlayer();
-			$vehicle = $player->getLevel()->getEntity($packet->target);
+			$player = $event->getOrigin()->getPlayer();
+			$vehicle = $player->getWorld()->getEntity($packet->target);
 			if($vehicle instanceof Vehicle) {
-				$vehicle->removePlayer($event->getPlayer());
+				$vehicle->removePlayer($player);
 				$event->setCancelled();
 			}
 		}
@@ -180,8 +167,8 @@ class EventHandler implements Listener
 		$packet = $event->getPacket();
 
 		if($packet->trData instanceof UseItemOnEntityTransactionData){
-			$player = $event->getPlayer();
-			$vehicle = $player->getLevel()->getEntity($packet->trData->getEntityRuntimeId());
+			$player = $event->getOrigin()->getPlayer();
+			$vehicle = $player->getWorld()->getEntity($packet->trData->getEntityRuntimeId());
 			if($vehicle instanceof Vehicle){
 				if($packet->trData->getActionType() === UseItemOnEntityTransactionData::ACTION_INTERACT) {
 					if($vehicle->getDriver() !== null) $vehicle->addPassenger($player);
