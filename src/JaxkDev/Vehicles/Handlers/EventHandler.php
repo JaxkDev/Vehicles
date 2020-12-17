@@ -15,6 +15,10 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Handlers;
 
 use JaxkDev\Vehicles\Vehicle;
+use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\item\Item;
+use pocketmine\level\Position;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
@@ -27,7 +31,6 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
-
 use JaxkDev\Vehicles\Main;
 
 class EventHandler implements Listener
@@ -87,17 +90,43 @@ class EventHandler implements Listener
 	 * Some interruption by MultiWorld
 	 */
 	public function onEntityDamageEvent(EntityDamageByEntityEvent $event): void{
-		if($event->getEntity() instanceof Vehicle){
-			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
-			if(!($event->getDamager() instanceof Player)) return;
-			/** @var Player $attacker */
-			$attacker = $event->getDamager();
-			/** @var Vehicle $entity */
-			$entity = $event->getEntity();
+		if($event->getEntity() instanceof Vehicle) {
+            $event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
+            if (!($event->getDamager() instanceof Player)) return;
+            /** @var Player $attacker */
+            $attacker = $event->getDamager();
+            /** @var Vehicle $entity */
+            $entity = $event->getEntity();
+            // item
+            $item = Item::get(Item::NETHER_STAR, 0, 1);
+            $item->setCustomName(C::BOLD . C::RED . "Car");
+            $item->setNamedTagEntry(new IntTag("car", 1));
+            $item->getNamedTagEntry("car");
+
+            ###
+            // remove by interact
+            if ($entity instanceof Vehicle) {
+                if (!$entity->isVehicleEmpty()) {
+                    $attacker->sendMessage(Main::$prefix . C::RED . "You cannot remove a vehicle with players in it.");
+                } else {
+                    $entity->close();
+                    $attacker->sendMessage(Main::$prefix . "'" . $entity->getVehicleName() . "' has been removed.");
+                    if (($inv = $attacker->getInventory()) == null) {
+                        $attacker->getLevel()->dropItem(Position::fromObject($attacker->add(0.5, 0.75, 0.5)), ($item));
+                    } else {
+                        $attacker->getInventory()->addItem($item);
+                    }
+                    $item->setCount(1);
+                }
+                return;
+            }
+            ###
+
 			if(($index = array_search(strtolower($attacker->getName()),array_keys($this->plugin->interactCommands))) !== false){
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
 				/** @noinspection PhpUnusedLocalVariableInspection */
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
+				// remove with command
 				switch($command){
 					case 'remove':
 						if($entity instanceof Vehicle){
@@ -107,6 +136,12 @@ class EventHandler implements Listener
 							else {
 								$entity->close();
 								$attacker->sendMessage(Main::$prefix . "'" . $entity->getVehicleName() . "' has been removed.");
+                                if (($inv = $attacker->getInventory()) == null) {
+                                    $attacker->getLevel()->dropItem(Position::fromObject($attacker->add(0.5, 0.75, 0.5)), ($item));
+                                } else {
+                                    $attacker->getInventory()->addItem($item);
+                                }
+                                $item->setCount(1);
 							}
 						}
 						unset($this->plugin->interactCommands[strtolower($attacker->getName())]);
@@ -209,4 +244,23 @@ class EventHandler implements Listener
 				break;
 		}
 	}
+
+	public function onInteract(PlayerInteractEvent $event){
+	    $player = $event->getPlayer();
+        $item = $event->getItem();
+
+        if($event->isCancelled()) return;
+        //$item = Item::get(Item::NETHER_STAR, 100, 1);
+       // $item = $netherStart->getNamedTagEntry("car");
+       /* $item = Item::get(Item::TRIPWIRE_HOOK, 0, 1);
+        $item->setCustomName(TextFormat::BOLD.TextFormat::RED."BasicCar");
+        $item->setNamedTagEntry(new IntTag("car", 1));
+        $item->getNamedTagEntry("car");*/
+        if($item->getNamedTagEntry("car") === null){
+            return;
+        }
+        $this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData("BasicCar"), $player->getLevel(), $player->asVector3());
+        $item->setCount(1);
+        $player->getInventory()->removeItem($item);
+    }
 }
