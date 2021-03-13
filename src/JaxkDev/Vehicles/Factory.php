@@ -371,7 +371,7 @@ class Factory{
 		}
 		return new SkinData(
 			$skin->getSkinId(),
-			""
+			"",
 			json_encode(["geometry" => ["default" => $geometryName]]),
 			SkinImage::fromLegacy($skin->getSkinData()), [],
 			$capeImage,
