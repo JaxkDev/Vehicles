@@ -27,6 +27,7 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+use pocketmine\network\mcpe\protocol\types\inventory\UseItemOnEntityTransactionData;
 
 use JaxkDev\Vehicles\Main;
 
@@ -178,11 +179,11 @@ class EventHandler implements Listener
 		/** @var InventoryTransactionPacket $packet */
 		$packet = $event->getPacket();
 
-		if($packet->transactionType === InventoryTransactionPacket::TYPE_USE_ITEM_ON_ENTITY){
+		if($packet->trData instanceof UseItemOnEntityTransactionData){
 			$player = $event->getPlayer();
-			$vehicle = $player->getLevel()->getEntity($packet->trData->entityRuntimeId);
+			$vehicle = $player->getLevel()->getEntity($packet->trData->getEntityRuntimeId());
 			if($vehicle instanceof Vehicle){
-				if($packet->trData->actionType === InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT) {
+				if($packet->trData->getActionType() === UseItemOnEntityTransactionData::ACTION_INTERACT) {
 					if($vehicle->getDriver() !== null) $vehicle->addPassenger($player);
 					else $vehicle->setDriver($player);
 					$event->setCancelled();

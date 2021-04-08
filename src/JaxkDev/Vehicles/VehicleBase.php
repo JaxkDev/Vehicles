@@ -32,6 +32,7 @@ use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
+use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class VehicleBase extends Entity implements Rideable
@@ -264,7 +265,7 @@ class VehicleBase extends Entity implements Rideable
 		//Below adds the actual entity and puts the pieces together.
 		$pk = new AddPlayerPacket();
 		$pk->uuid = $this->uuid;
-		$pk->item = Item::get(Item::AIR);
+		$pk->item = ItemStackWrapper::legacy(Item::get(Item::AIR));
 		$pk->motion = $this->getMotion();
 		$pk->position = $this->asVector3();
 		$pk->entityRuntimeId = $this->getId();
