@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019-2020 JaxkDev
+ * Copyright (C) 2019-2021 JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: JaxkDev#0001
+ * Discord :: JaxkDev#2698
  * Email   :: JaxkDev@gmail.com
  */
 
