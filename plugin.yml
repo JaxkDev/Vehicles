@@ -18,26 +18,21 @@ permissions:
   vehicles:
     default: false
     description: "Allows user all vehicles plugin perms."
-    children:
-
-      vehicles.command:
-        description: "Allows user to use all vehicle commands."
-        default: false
-        children:
-
-          vehicles.command.use:
-            description: "Allows user to use vehicle commands."
-            default: true
-          vehicles.command.spawn:
-            description: "Allows user to spawn a vehicle."
-            default: op
-          vehicles.command.remove:
-            description: "Allows user to remove a vehicle."
-            default: op
-
-      vehicles.drive:
-        description: "Allows user to drive a vehicle."
-        default: true
-      vehicles.passenger:
-        description: "Allows user to be a passenger."
-        default: true
+  vehicles.command:
+    description: "Allows user to use all vehicle commands."
+    default: false
+  vehicles.command.use:
+    description: "Allows user to use vehicle commands."
+    default: true
+  vehicles.command.spawn:
+    description: "Allows user to spawn a vehicle."
+    default: op
+  vehicles.command.remove:
+    description: "Allows user to remove a vehicle."
+    default: op
+  vehicles.drive:
+    description: "Allows user to drive a vehicle."
+    default: true
+  vehicles.passenger:
+    description: "Allows user to be a passenger."
+    default: true
