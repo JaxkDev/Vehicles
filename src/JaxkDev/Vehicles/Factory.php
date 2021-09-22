@@ -27,10 +27,9 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\protocol\types\LegacySkinAdapter;
 use pocketmine\plugin\PluginException;
 use pocketmine\network\mcpe\protocol\types\SkinData;
-use pocketmine\network\mcpe\protocol\types\SkinImage;
-use pocketmine\network\mcpe\protocol\types\SkinAdapterSingleton;
 
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
@@ -268,7 +267,7 @@ class Factory{
 			}
 
 			// MCPE 1.13.0 change to SkinData:
-			$this->designs[$name] = $this->skinToSkinData($skin);
+			$this->designs[$name] = (new LegacySkinAdapter())->toSkinData($skin);
 
 			$this->plugin->getLogger()->debug("Successfully registered design '{$name}'");
 		}
@@ -357,36 +356,5 @@ class Factory{
 			throw new DesignException("Unknown design type '{$type}' received.");
 			//Should never get here unless using as API.
 		}
-	}
-	
-	/**
-	 * Copy of pmmp's legacy converter except sets skin to trusted, this is used instead of changing client settings.
-	 */
-	private function skinToSkinData(Skin $skin): SkinData{
-		$capeData = $skin->getCapeData();
-		$capeImage = $capeData === "" ? new SkinImage(0, 0, "") : new SkinImage(32, 64, $capeData);
-		$geometryName = $skin->getGeometryName();
-		if($geometryName === ""){
-			$geometryName = "geometry.humanoid.custom";
-		}
-		return new SkinData(
-			$skin->getSkinId(),
-			"",
-			json_encode(["geometry" => ["default" => $geometryName]]),
-			SkinImage::fromLegacy($skin->getSkinData()), [],
-			$capeImage,
-			$skin->getGeometryData(),
-			"",
-			false,
-			false,
-			false,
-			"",
-			null,
-			"wide",
-			"",
-			[],
-			[],
-			true
-		);
 	}
 }

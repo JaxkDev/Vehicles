@@ -1,1 +1,5 @@
 .idea
+/vendor/
+/PHPSTAN.php
+/BUILD.php
+/dist/

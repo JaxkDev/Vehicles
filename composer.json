@@ -1,0 +1,6 @@
+{
+    "require-dev": {
+        "pocketmine/pocketmine-mp": "^3",
+        "phpstan/phpstan": "^0.12.99"
+    }
+}
