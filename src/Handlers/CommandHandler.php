@@ -14,10 +14,10 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles\Handlers;
 
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginException;
-use pocketmine\command\ConsoleCommandSender;
 use JaxkDev\Vehicles\Main;
 
 class CommandHandler
@@ -44,7 +44,7 @@ class CommandHandler
 	 * @param string[] $args
 	 */
 	function handleCommand(CommandSender $sender, array $args): void{
-		if($sender instanceof ConsoleCommandSender){
+		if(!$sender instanceof Player){
 			$sender->sendMessage($this->prefix.C::RED."Commands for Vehicles cannot be run from console.");
 			return;
 		}
@@ -74,7 +74,7 @@ class CommandHandler
 			case 'types':
 			case 'type':
 				$sender->sendMessage($this->prefix.C::RED."To spawn: /vehicles spawn <type>");
-				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys((array)$this->plugin->factory->getAllVehicleData())));
+				$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
 				break;
 			case 'spawn':
 			case 'create':
@@ -85,11 +85,11 @@ class CommandHandler
 				}
 				if(count($args) === 0){
 					$sender->sendMessage($this->prefix.C::RED."Usage: /vehicles spawn (Type)");
-					$sender->sendMessage($this->prefix.C::AQUA."Vehicles's Available:\n- ".join("\n- ", array_keys((array)$this->plugin->factory->getAllVehicleData())));
+					$sender->sendMessage($this->prefix.C::AQUA."Vehicle's Available:\n- ".join("\n- ", array_keys($this->plugin->factory->getAllVehicleData())));
 					return;
 				}
 				if($this->plugin->factory->getVehicleData($args[0]) !== null){
-					$this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData($args[0]), $sender->getLocation());
+                    $this->plugin->factory->spawnVehicle($this->plugin->factory->getVehicleData($args[0]), $sender->getLocation());
 				}
 				else{
 					$sender->sendMessage($this->prefix.C::RED."\"".$args[0]."\" does not exist.");

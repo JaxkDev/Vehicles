@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use LogicException;
-use pocketmine\uuid\UUID;
 use pocketmine\player\Player;
 use pocketmine\entity\Location;
 use pocketmine\nbt\tag\CompoundTag;
@@ -23,6 +22,7 @@ use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLink;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
+use Ramsey\Uuid\Uuid;
 
 class Vehicle extends VehicleBase
 {
@@ -47,9 +47,7 @@ class Vehicle extends VehicleBase
 	//---------- Logic below... ------------
 
 	/**
-	 * Handle player input.
-	 * @param float $x
-	 * @param float $y
+	 * Handles player input from PlayerInputPacket.
 	 */
 	public function updateMotion(float $x, float $y): void{
 		//				(1 if only one button, 0.7 if two)
@@ -57,7 +55,7 @@ class Vehicle extends VehicleBase
 		//-y = backward. (-1/-0.7)
 		//+x = left (+1/+0.7)
 		//-x = right (-1/-0.7)
-		if($x !== 0){
+		if($x != 0){
 			if($x > 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["left"];
 			if($x < 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["right"];
 			$this->motion = $this->getDirectionVector();
@@ -67,7 +65,7 @@ class Vehicle extends VehicleBase
 			//forward
 			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["forward"]);
 			$this->location->yaw = $this->driver->getLocation()->getYaw();// - turn based on players rotation
-		} elseif ($y < 0){
+		}elseif($y < 0){
 			//reverse
 			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["backward"]);
 		}
@@ -75,7 +73,7 @@ class Vehicle extends VehicleBase
 
     protected function broadcastMovement(bool $teleport = false) : void{
         $pk = new MovePlayerPacket();
-        $pk->entityRuntimeId = $this->getId();
+        $pk->actorRuntimeId = $this->getId();
         $pk->position = $this->getOffsetPosition($this->getPosition());
         $pk->pitch = $this->getLocation()->getPitch();
         $pk->headYaw = $this->getLocation()->getYaw();
@@ -131,7 +129,7 @@ class Vehicle extends VehicleBase
 	/**
 	 * @return Player[]
 	 */
-	public function getPassengers(){
+	public function getPassengers(): array{
 		return $this->passengers;
 	}
 
@@ -169,12 +167,7 @@ class Vehicle extends VehicleBase
 		return false;
 	}
 
-	/**
-	 * @param Player|UUID $player
-	 * @param string|null $message
-	 * @return bool
-	 */
-	public function removePassenger($player, ?string $message = null): bool{
+	public function removePassenger(Player|Uuid $player, ?string $message = null): bool{
 		if($player instanceof Player) $player = $player->getUniqueId();
 		foreach(array_keys($this->passengers) as $i){
 			if($this->passengers[$i]->getUniqueId() === $player){

@@ -1,11 +1,11 @@
 name: Vehicles
 author: JaxkDev
-version: 0.2.0
+version: 1.0.0
 api: 4.0.0
-mcpe-protocol: [407]
+src-namespace-prefix: JaxkDev\Vehicles
 main: JaxkDev\Vehicles\Main
 website: "https://github.com/JaxkDev/Vehicles"
-description: "[W.I.P] PocketMine-MP plugin that brings vehicles to your server !"
+description: "PocketMine-MP plugin that brings vehicles to your server !"
 
 commands:
   vehicles:
@@ -15,29 +15,22 @@ commands:
     permission-message: "[Vehicles] > You do not have permission to use vehicle commands."
 
 permissions:
-  vehicles:
-    default: false
-    description: "Allows user all vehicles plugin perms."
-    children:
+  vehicles.command.use:
+    description: "Allows user to use vehicle commands."
+    default: true
+  vehicles.command.lock:
+    description: "Allows user to lock their vehicle."
+    default: true
+  vehicles.command.spawn:
+    description: "Allows user to spawn a vehicle."
+    default: op
+  vehicles.command.remove:
+    description: "Allows user to remove a vehicle."
+    default: op
 
-      vehicles.command:
-        description: "Allows user to use all vehicle commands."
-        default: false
-        children:
-
-          vehicles.command.use:
-            description: "Allows user to use vehicle commands."
-            default: true
-          vehicles.command.spawn:
-            description: "Allows user to spawn a vehicle."
-            default: op
-          vehicles.command.remove:
-            description: "Allows user to remove a vehicle."
-            default: op
-
-      vehicles.drive:
-        description: "Allows user to drive a vehicle."
-        default: true
-      vehicles.passenger:
-        description: "Allows user to be a passenger."
-        default: true
+  vehicles.drive:
+    description: "Allows user to drive their vehicle."
+    default: true
+  vehicles.passenger:
+    description: "Allows user to be a passenger."
+    default: true

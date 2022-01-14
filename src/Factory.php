@@ -16,7 +16,6 @@ namespace JaxkDev\Vehicles;
 
 use DirectoryIterator;
 
-
 use pocketmine\world\World;
 use pocketmine\entity\Skin;
 use pocketmine\entity\Location;
@@ -28,8 +27,8 @@ use pocketmine\entity\EntityFactory;
 use pocketmine\plugin\PluginException;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\InvalidSkinException;
-use pocketmine\network\mcpe\protocol\types\SkinData;
-use pocketmine\network\mcpe\protocol\types\SkinImage;
+use pocketmine\network\mcpe\protocol\types\skin\SkinData;
+use pocketmine\network\mcpe\protocol\types\skin\SkinImage;
 
 use JaxkDev\Vehicles\Exceptions\DesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
@@ -59,9 +58,6 @@ class Factory{
 	 * @return Vehicle|null
 	 */
 	public function spawnVehicle($vehicleData, Location $loc): ?Vehicle{
-
-		var_dump("spawn");
-
 		$passengerSeats = new ListTag();
 		foreach($vehicleData["seatPositions"]["passengers"] as $seat){
 			$passengerSeats->push(new ListTag([
@@ -318,8 +314,7 @@ class Factory{
 	 * @param string $path
 	 * @return string|null RGBA Bytes to use.
 	 * @throws PluginException|DesignException
-	 * @noinspection PhpComposerExtensionStubsInspection
-	 */
+     */
 	public function readDesignFile(string $path): ?string{
 		$type = pathinfo($path, PATHINFO_EXTENSION);
 		if($type === "png"){
@@ -337,7 +332,7 @@ class Factory{
 			for ($y = 0; $y < imagesy($img); $y++) {
 				for ($x = 0; $x < imagesx($img); $x++) {
 					$rgba = @imagecolorat($img, $x, $y);
-					$a = chr(((~((int)($rgba >> 24))) << 1) & 0xff);
+					$a = chr(((~(($rgba >> 24))) << 1) & 0xff);
 					$r = chr(($rgba >> 16) & 0xff);
 					$g = chr(($rgba >> 8) & 0xff);
 					$b = chr($rgba & 0xff);
@@ -351,8 +346,7 @@ class Factory{
 		} elseif ($type === "json") {
 			$this->plugin->getLogger()->debug("Loaded design from original json.");
 			$data = json_decode(file_get_contents($path));
-			$data = base64_decode($data->data);
-			return $data;
+            return base64_decode($data->data, true);
 		} else {
 			throw new DesignException("Unknown design type '{$type}' received.");
 			//Should never get here unless using as API.
@@ -371,21 +365,11 @@ class Factory{
 		}
 		return new SkinData(
 			$skin->getSkinId(),
+            "",
 			json_encode(["geometry" => ["default" => $geometryName]]),
 			SkinImage::fromLegacy($skin->getSkinData()), [],
 			$capeImage,
-			$skin->getGeometryData(),
-			"",
-			false,
-			false,
-			false,
-			"",
-			null,
-			"wide",
-			"",
-			[],
-			[],
-			true
+			$skin->getGeometryData()
 		);
 	}
 }

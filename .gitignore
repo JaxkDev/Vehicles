@@ -1,5 +1,5 @@
 .idea
 /vendor/
-/PHPSTAN.php
-/BUILD.php
 /dist/
+/BUILD.php
+/PHPSTAN.php

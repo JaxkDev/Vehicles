@@ -76,13 +76,11 @@ class EventHandler implements Listener
 	 */
 	public function onEntityDamageEvent(EntityDamageByEntityEvent $event): void{
 		if($event->getEntity() instanceof Vehicle){
-			$event->setCancelled(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
-			if(!($event->getDamager() instanceof Player)) return;
-			/** @var Player $attacker */
+			$event->cancel(); //stops the ability to 'kill' a object/vehicle. (In long future, add vehicle condition *shrug*
 			$attacker = $event->getDamager();
-			/** @var Vehicle $entity */
+            if(!($attacker instanceof Player)) return;
 			$entity = $event->getEntity();
-			if(($index = array_search(strtolower($attacker->getName()),array_keys($this->plugin->interactCommands))) !== false){
+			if(($index = array_search(strtolower($attacker->getName()), array_keys($this->plugin->interactCommands), true)) !== false){
 				$command = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][0];
 				/** @noinspection PhpUnusedLocalVariableInspection */
 				$args = $this->plugin->interactCommands[array_keys($this->plugin->interactCommands)[$index]][1];
@@ -129,7 +127,7 @@ class EventHandler implements Listener
 		$player = $event->getOrigin();
 
 		if(isset(Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()])){
-			$event->setCancelled();
+			$event->cancel();
 			if($packet->motionX === 0.0 and $packet->motionY === 0.0) {
 				return;
 			} //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
@@ -150,10 +148,10 @@ class EventHandler implements Listener
 
 		if($packet->action === InteractPacket::ACTION_LEAVE_VEHICLE){
 			$player = $event->getOrigin()->getPlayer();
-			$vehicle = $player->getWorld()->getEntity($packet->target);
+			$vehicle = $player->getWorld()->getEntity($packet->targetActorRuntimeId);
 			if($vehicle instanceof Vehicle) {
 				$vehicle->removePlayer($player);
-				$event->setCancelled();
+				$event->cancel();
 			}
 		}
 	}
@@ -168,12 +166,12 @@ class EventHandler implements Listener
 
 		if($packet->trData instanceof UseItemOnEntityTransactionData){
 			$player = $event->getOrigin()->getPlayer();
-			$vehicle = $player->getWorld()->getEntity($packet->trData->getEntityRuntimeId());
+			$vehicle = $player->getWorld()->getEntity($packet->trData->getActorRuntimeId());
 			if($vehicle instanceof Vehicle){
 				if($packet->trData->getActionType() === UseItemOnEntityTransactionData::ACTION_INTERACT) {
 					if($vehicle->getDriver() !== null) $vehicle->addPassenger($player);
 					else $vehicle->setDriver($player);
-					$event->setCancelled();
+					$event->cancel();
 				}
 			}
 		}

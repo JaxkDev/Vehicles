@@ -1,0 +1,12 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    excludePaths:
+        analyse:
+            - vendor
+    checkMissingIterableValueType: false
+    treatPhpDocTypesAsCertain: false

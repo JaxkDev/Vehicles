@@ -14,7 +14,12 @@ declare(strict_types=1);
 
 namespace JaxkDev\Vehicles;
 
-use pocketmine\uuid\UUID;
+use pocketmine\entity\EntitySizeInfo;
+use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
+use pocketmine\network\mcpe\protocol\types\DeviceOS;
+use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
+use pocketmine\network\mcpe\protocol\types\skin\SkinData;
+use Ramsey\Uuid\Uuid;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\entity\Entity;
@@ -22,7 +27,6 @@ use pocketmine\entity\Location;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
@@ -32,6 +36,7 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityLink;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 
 use JaxkDev\Vehicles\Exceptions\VehicleException;
+use Ramsey\Uuid\UuidInterface;
 
 class VehicleBase extends Entity
 {
@@ -41,7 +46,7 @@ class VehicleBase extends Entity
 	public const VEHICLE_TYPE_RAIL = 3;
 	public const VEHICLE_TYPE_UNKNOWN = 9;
 
-	/** @var UUID|null */
+	/** @var UuidInterface|null */
 	protected $uuid = null;
 
 	/** @var float */
@@ -96,7 +101,6 @@ class VehicleBase extends Entity
 
 	public function __construct(Location $loc, CompoundTag $nbt)
 	{
-		var_dump("construct");
 		$this->plugin = Main::getInstance();
 		parent::__construct($loc, $nbt);
 		$this->loadFromNBT($nbt);
@@ -104,12 +108,12 @@ class VehicleBase extends Entity
 	}
 
 	/**
+     * //TODO, Central point of rewrite. (MOVE AWAY FROM NBT/LEVEL SAVING.)
 	 * @param CompoundTag $nbt
 	 * @throws VehicleException
 	 */
 	public function loadFromNBT(CompoundTag $nbt): void
 	{
-		var_dump("base - loadNbt");
 		if (Main::$vehicleDataVersion !== $nbt->getInt("vehicle", -1)) {
 			//TODO
 			throw new VehicleException("Vehicle version {$nbt->getInt("vehicle",-1)} does not match expected version " . Main::$vehicleDataVersion);
@@ -119,7 +123,7 @@ class VehicleBase extends Entity
 		/** @var CompoundTag $data */
 		$data = $nbt->getCompoundTag("vehicleData");
 
-		$this->uuid = UUID::fromString($data->getString("uuid", UUID::fromRandom()->toString()));
+		$this->uuid = UUID::fromString($data->getString("uuid", Uuid::uuid4()->toString()));
 		$this->type = $data->getInt("type", 9);
 		$this->name = $data->getString("name");
 		$this->designName = $data->getString("design");
@@ -142,18 +146,17 @@ class VehicleBase extends Entity
 		$seat = $data->getListTag("driverSeat")->getAllValues();
 		$this->seats["driver"] = new Vector3($seat[0], $seat[1], $seat[2]);
 
-		foreach ($data->getListTag("passengerSeats")->getAllValues() as $ltag) {
-			$seat = $ltag->getAllValues();
-			$this->seats["passengers"][] = new Vector3($seat[0], $seat[1], $seat[2]);
+		foreach ($data->getListTag("passengerSeats")->getAllValues() as $seats) {
+			$this->seats["passengers"][] = new Vector3($seats[0]->getValue(), $seats[1]->getValue(), $seats[2]->getValue());
 		}
 
 		// Handlers
 		$this->setScale($this->scale); //TODO BBox
+        $this->location->pitch = 0;
 	}
 
 	public function saveNBT(): CompoundTag
 	{
-		var_dump("base-saveNbt");
 		$nbt = parent::saveNBT();
 		$nbt->setInt("vehicle", $this->version ?? Main::$vehicleDataVersion);
 
@@ -199,7 +202,15 @@ class VehicleBase extends Entity
 		return $nbt;
 	}
 
-	public function getUUID(): ?UUID
+    public function getInitialSizeInfo(): EntitySizeInfo{
+        return new EntitySizeInfo($this->height, $this->width);
+    }
+
+    public function getOffsetPosition(Vector3 $vector3) : Vector3{
+        return $vector3->add(0, $this->baseOffset, 0);
+    }
+
+    public function getUuid(): ?UuidInterface
 	{
 		return $this->uuid;
 	}
@@ -237,16 +248,14 @@ class VehicleBase extends Entity
 	/**
 	 * @return array<string, float|null>
 	 */
-	public function getVehicleSpeed()
-	{
+	public function getVehicleSpeed(): array{
 		return $this->speed;
 	}
 
 	/**
 	 * @return array<string, null|Vector3|array<Vector3>>
 	 */
-	public function getVehicleSeats()
-	{
+	public function getVehicleSeats(): array{
 		return $this->seats;
 	}
 
@@ -274,14 +283,32 @@ class VehicleBase extends Entity
 		$player->getNetworkSession()->sendDataPacket($pk);
 
 		//Below adds the actual entity and puts the pieces together.
-		$pk = new AddPlayerPacket();
-		$pk->uuid = $this->uuid;
-		$pk->item = ItemStack::null();
-		$pk->motion = $this->getMotion();
-		$pk->position = $this->getPosition();
-		$pk->entityRuntimeId = $this->getId();
-		$pk->metadata = $this->getNetworkProperties()->getAll();
-		$pk->username = $this->getVehicleName() . "-" . $this->id; //Unique.
+        $adventure = new AdventureSettingsPacket();
+        $adventure->targetActorUniqueId = $this->id;
+        $pk = AddPlayerPacket::create(
+            $this->uuid,
+            $this->getVehicleName() . "-" . $this->id,
+            $this->id,
+            $this->id,
+            "",
+            $this->getPosition(),
+            $this->getMotion(),
+            $this->getLocation()->getPitch(),
+            $this->getLocation()->getYaw(),
+            $this->getLocation()->getYaw(),
+            ItemStackWrapper::legacy(itemStack::null()),
+            $this->getNetworkProperties()->getAll(),
+            $adventure,
+            [],
+            "",
+            DeviceOS::UNKNOWN
+        );
+
+        /* Reproduce RakLib thread issue:
+        $pk = new AddPlayerPacket();
+        $pk->uuid = $this->uuid;
+        */
+
 		$player->getNetworkSession()->sendDataPacket($pk);
 
 		//Dont want to keep a fake person there...
