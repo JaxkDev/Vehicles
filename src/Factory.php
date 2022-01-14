@@ -3,10 +3,10 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019-2020 JaxkDev
+ * Copyright (C) 2019-present JaxkDev
  *
  * Twitter :: @JaxkDev
- * Discord :: JaxkDev#0001
+ * Discord :: JaxkDev#2698
  * Email   :: JaxkDev@gmail.com
  */
 
@@ -30,7 +30,7 @@ use pocketmine\entity\InvalidSkinException;
 use pocketmine\network\mcpe\protocol\types\skin\SkinData;
 use pocketmine\network\mcpe\protocol\types\skin\SkinImage;
 
-use JaxkDev\Vehicles\Exceptions\DesignException;
+use JaxkDev\Vehicles\Exceptions\InvalidDesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class Factory{
@@ -214,15 +214,15 @@ class Factory{
 
 	/**
 	 * Register all designs from plugin_data/Vehicles/Designs/Design_Manifest.json into memory.
-	 * Can be used to reload data but with argument force being true to overwrite existing vehicles.
+	 * Can be used to reload data by setting force to true, it will overwrite existing vehicles.
 	 *
 	 * @param bool $force
 	 */
-	public function registerDesigns($force = false): void{
+	public function registerDesigns(bool $force = false): void{
 		$manifest = json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/Design_Manifest.json"), true) ?? [];
 
 		if(count($manifest) === 0){
-			throw new DesignException("No designs found in manifest, it is either invalid JSON or empty (delete the file to generate the default).");
+			throw new InvalidDesignException("No designs found in manifest, it is either invalid JSON or empty (delete the file to generate the default).");
 		}
 
 		foreach($manifest as $data){
@@ -231,11 +231,11 @@ class Factory{
 			$geometry = $name . "_Geometry.json"; //New standard (0.1.0+)
 
 			if(array_key_exists($name, $this->designs) && !$force){
-				throw new DesignException("Failed to register design '{$name}', design already loaded.");
+				throw new InvalidDesignException("Failed to register design '{$name}', design already loaded.");
 			}
 
 			if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1) {
-				throw new DesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
+				throw new InvalidDesignException("Failed to register design '{$name}', design has an invalid UUID of '{$uuid}'");
 			}
 
 			$this->plugin->saveResource("Designs/" . $name . ".png", false);
@@ -247,19 +247,19 @@ class Factory{
 			} elseif (file_exists($this->plugin->getDataFolder() . "Designs/" . $name . ".png")){
 				$design = $this->readDesignFile($this->plugin->getDataFolder() . "Designs/" . $name . ".png");
 			} else {
-				throw new DesignException("Failed to register design '{$name}', Design file '{$name}.png/.json' does not exist.");
+				throw new InvalidDesignException("Failed to register design '{$name}', Design file '{$name}.png/.json' does not exist.");
 			}
 
 			if(file_exists($this->plugin->getDataFolder() . "Designs/" . $geometry)){
 				$geoData = (array)json_decode(file_get_contents($this->plugin->getDataFolder() . "Designs/" . $geometry));
 			} else {
-				throw new DesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
+				throw new InvalidDesignException("Failed to register design '{$name}', Geometry file '{$geometry}' does not exist.");
 			}
 
 			try{
 				$skin = new Skin($uuid,$design,"",$geoData["minecraft:geometry"][0]->description->identifier,json_encode($geoData));
 			} catch (InvalidSkinException $e){
-				throw new DesignException("Failed to register design '{$name}', Design data (skin/UV) is invalid: {$e->getMessage()}");
+				throw new InvalidDesignException("Failed to register design '{$name}', Design data (skin/UV) is invalid: {$e->getMessage()}");
 			}
 
 			// MCPE 1.13.0/1.16.0 changes to SkinData:
@@ -313,7 +313,7 @@ class Factory{
 	 * Return the RGBA Byte array ready for use from a UV Map (png/json)
 	 * @param string $path
 	 * @return string|null RGBA Bytes to use.
-	 * @throws PluginException|DesignException
+	 * @throws PluginException|InvalidDesignException
      */
 	public function readDesignFile(string $path): ?string{
 		$type = pathinfo($path, PATHINFO_EXTENSION);
@@ -348,7 +348,7 @@ class Factory{
 			$data = json_decode(file_get_contents($path));
             return base64_decode($data->data, true);
 		} else {
-			throw new DesignException("Unknown design type '{$type}' received.");
+			throw new InvalidDesignException("Unknown design type '{$type}' received.");
 			//Should never get here unless using as API.
 		}
 	}

@@ -3,7 +3,7 @@
  * Vehicles, PocketMine-MP Plugin.
  *
  * Licensed under the Open Software License version 3.0 (OSL-3.0)
- * Copyright (C) 2019-2021 JaxkDev
+ * Copyright (C) 2019-present JaxkDev
  *
  * Twitter :: @JaxkDev
  * Discord :: JaxkDev#2698
@@ -21,7 +21,7 @@ use pocketmine\utils\TextFormat as C;
 
 use JaxkDev\Vehicles\Handlers\EventHandler;
 use JaxkDev\Vehicles\Handlers\CommandHandler;
-use JaxkDev\Vehicles\Exceptions\DesignException;
+use JaxkDev\Vehicles\Exceptions\InvalidDesignException;
 use JaxkDev\Vehicles\Exceptions\VehicleException;
 
 class Main extends PluginBase{
@@ -68,7 +68,7 @@ class Main extends PluginBase{
 		$this->getLogger()->debug("Registering designs...");
 		try{
 			$this->factory->registerDesigns();
-		} catch (DesignException $e){
+		} catch (InvalidDesignException $e){
 			$this->getLogger()->debug("Failed to register designs on load, below contains the error (often including a user friendly reason).");
 			$this->getLogger()->critical($e->getMessage());
 			$this->getServer()->getPluginManager()->disablePlugin($this);
