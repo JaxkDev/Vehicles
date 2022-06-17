@@ -297,6 +297,7 @@ class VehicleBase extends Entity
             $this->getLocation()->getYaw(),
             $this->getLocation()->getYaw(),
             ItemStackWrapper::legacy(itemStack::null()),
+            0,
             $this->getNetworkProperties()->getAll(),
             $adventure,
             [],

@@ -46,30 +46,60 @@ class Vehicle extends VehicleBase
 
 	//---------- Logic below... ------------
 
-	/**
-	 * Handles player input from PlayerInputPacket.
-	 */
-	public function updateMotion(float $x, float $y): void{
-		//				(1 if only one button, 0.7 if two)
-		//+y = forward. (+1/+0.7)
-		//-y = backward. (-1/-0.7)
-		//+x = left (+1/+0.7)
-		//-x = right (-1/-0.7)
-		if($x != 0){
-			if($x > 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["left"];
-			if($x < 0) $this->location->yaw -= $x*$this->getVehicleSpeed()["right"];
-			$this->motion = $this->getDirectionVector();
-		}
+    public function doRidingMovement(float $motionX, float $motionZ, float $yaw, float $pitch=0.0): void {
+        $speed_factor = 2 * 1.5;
+        $direction_plane = $this->getDirectionPlane();
+        $x = $direction_plane->x / $speed_factor;
+        $z = $direction_plane->y / $speed_factor;
 
-		if($y > 0){
-			//forward
-			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["forward"]);
-			$this->location->yaw = $this->driver->getLocation()->getYaw();// - turn based on players rotation
-		}elseif($y < 0){
-			//reverse
-			$this->motion = $this->getDirectionVector()->multiply($y*$this->getVehicleSpeed()["backward"]);
-		}
-	}
+        if(!$this->isOnGround()) {
+            if($this->motion->y > -$this->gravity * 2) {
+                $this->motion->y = -$this->gravity * 2;
+            } else {
+                $this->motion->y -= $this->gravity;
+            }
+        } else {
+            $this->motion->y -= $this->gravity;
+        }
+
+        $finalMotionX = 0;
+        $finalMotionZ = 0;
+
+        switch($motionZ) {
+            case 1:
+                $finalMotionX = $x;
+                $finalMotionZ = $z;
+                break;
+            case 0:
+                break;
+            case -1:
+                $finalMotionX = -$x;
+                $finalMotionZ = -$z;
+                break;
+            default:
+                $average = $x + $z / 2;
+                $finalMotionX = $average / 1.414 * $motionZ;
+                $finalMotionZ = $average / 1.414 * $motionX;
+                break;
+        }
+
+        switch($motionX) {
+            case 1:
+                $finalMotionX = $z;
+                $finalMotionZ = -$x;
+                break;
+            case 0:
+                break;
+            case -1:
+                $finalMotionX = -$z;
+                $finalMotionZ = $x;
+                break;
+        }
+
+        $this->setRotation($yaw, $pitch);
+        $this->move($finalMotionX, $this->motion->y, $finalMotionZ);
+        $this->updateMovement();
+    }
 
     protected function broadcastMovement(bool $teleport = false) : void{
         $pk = new MovePlayerPacket();

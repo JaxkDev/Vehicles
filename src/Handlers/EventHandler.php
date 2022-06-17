@@ -15,6 +15,10 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Handlers;
 
 use JaxkDev\Vehicles\Vehicle;
+use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\server\DataPacketSendEvent;
+use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
+use pocketmine\network\mcpe\protocol\types\PlayerAuthInputFlags;
 use pocketmine\player\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
@@ -56,6 +60,14 @@ class EventHandler implements Listener
 			$this->plugin->getLogger()->debug($player->getName()." Has died while in a vehicle, they have been kicked from the vehicle.");
 		}
 	}
+
+    public function onQuit(PlayerQuitEvent $event): void{
+        $player = $event->getPlayer();
+        if(isset(Main::$inVehicle[$player->getUniqueId()->toString()])){
+            Main::$inVehicle[$player->getUniqueId()->toString()]->removePlayer($player);
+            $this->plugin->getLogger()->debug($player->getName()." Has quit while in a vehicle.");
+        }
+    }
 
 	public function onPlayerTeleportEvent(EntityTeleportEvent $event): void{
 		if($event->getEntity() instanceof Player){
@@ -121,22 +133,23 @@ class EventHandler implements Listener
 	 * Handle a players motion when driving.
 	 * @param DataPacketReceiveEvent $event
 	 */
-	public function onPlayerInputPacket($event): void{
-		/** @var PlayerInputPacket $packet */
-		$packet = $event->getPacket();
-		$player = $event->getOrigin();
+	public function onPlayerInputPacket($event): void
+    {
+        /** @var PlayerAuthInputPacket $packet */
+        $packet = $event->getPacket();
+        $player = $event->getOrigin();
 
-		if(isset(Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()])){
-			$event->cancel();
-			if($packet->motionX === 0.0 and $packet->motionY === 0.0) {
-				return;
-			} //MCPE Likes to send a lot of useless packets, this cuts down the ones we handle.
-			/** @var Vehicle $vehicle */
-			$vehicle = Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()];
-			if($vehicle->getDriver() === null) return;
-			if($vehicle->getDriver()->getUniqueId()->equals($player->getPlayer()->getUniqueId())) $vehicle->updateMotion($packet->motionX, $packet->motionY);
-		}
-	}
+        if (isset(Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()])) {
+            $event->cancel();
+            if ($packet->getMoveVecX() == 0 && $packet->getMoveVecZ() == 0) {
+                return;
+            }
+            /** @var Vehicle $vehicle */
+            $vehicle = Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()];
+            if ($vehicle->getDriver() === null) return;
+            if ($vehicle->getDriver()->getUniqueId()->equals($player->getPlayer()->getUniqueId())) $vehicle->doRidingMovement($packet->getMoveVecX(), $packet->getMoveVecZ(), $packet->getHeadYaw());
+        }
+    }
 
 	/**
 	 * Handle a players interact.
@@ -183,6 +196,7 @@ class EventHandler implements Listener
 	public function onDataPacketEvent(DataPacketReceiveEvent $event): void{
 		$packet = $event->getPacket();
 		$pid = $packet->pid();
+
 		switch($pid){
 			case InteractPacket::NETWORK_ID:
 				$this->onInteractPacket($event);
@@ -190,9 +204,21 @@ class EventHandler implements Listener
 			case InventoryTransactionPacket::NETWORK_ID:
 				$this->onInventoryTransactionPacket($event);
 				break;
-			case PlayerInputPacket::NETWORK_ID:
+			case PlayerAuthInputPacket::NETWORK_ID:
 				$this->onPlayerInputPacket($event);
+                //var_dump("executed");
 				break;
 		}
 	}
+
+    public function onDatapacketSendEvent(DataPacketSendEvent $event){
+        $packets = $event->getPackets();
+        foreach ($packets as $packet){
+            $pid = $packet->pid();
+            if ($pid != 144) {
+                #var_dump($pid);
+                #var_dump($packet->getName());
+            }
+        }
+    }
 }
