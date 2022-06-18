@@ -15,10 +15,7 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles\Handlers;
 
 use JaxkDev\Vehicles\Vehicle;
-use pocketmine\event\player\PlayerLoginEvent;
-use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
-use pocketmine\network\mcpe\protocol\types\PlayerAuthInputFlags;
 use pocketmine\player\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as C;
@@ -28,7 +25,6 @@ use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\types\inventory\UseItemOnEntityTransactionData;
 
@@ -60,14 +56,6 @@ class EventHandler implements Listener
 			$this->plugin->getLogger()->debug($player->getName()." Has died while in a vehicle, they have been kicked from the vehicle.");
 		}
 	}
-
-    public function onQuit(PlayerQuitEvent $event): void{
-        $player = $event->getPlayer();
-        if(isset(Main::$inVehicle[$player->getUniqueId()->toString()])){
-            Main::$inVehicle[$player->getUniqueId()->toString()]->removePlayer($player);
-            $this->plugin->getLogger()->debug($player->getName()." Has quit while in a vehicle.");
-        }
-    }
 
 	public function onPlayerTeleportEvent(EntityTeleportEvent $event): void{
 		if($event->getEntity() instanceof Player){
@@ -206,19 +194,7 @@ class EventHandler implements Listener
 				break;
 			case PlayerAuthInputPacket::NETWORK_ID:
 				$this->onPlayerInputPacket($event);
-                //var_dump("executed");
 				break;
 		}
 	}
-
-    public function onDatapacketSendEvent(DataPacketSendEvent $event){
-        $packets = $event->getPackets();
-        foreach ($packets as $packet){
-            $pid = $packet->pid();
-            if ($pid != 144) {
-                #var_dump($pid);
-                #var_dump($packet->getName());
-            }
-        }
-    }
 }
