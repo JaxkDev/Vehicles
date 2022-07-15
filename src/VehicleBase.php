@@ -15,10 +15,10 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use pocketmine\entity\EntitySizeInfo;
-use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\types\DeviceOS;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
 use pocketmine\network\mcpe\protocol\types\skin\SkinData;
+use pocketmine\network\mcpe\protocol\UpdateAbilitiesPacket;
 use Ramsey\Uuid\Uuid;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -283,12 +283,9 @@ class VehicleBase extends Entity
 		$player->getNetworkSession()->sendDataPacket($pk);
 
 		//Below adds the actual entity and puts the pieces together.
-        $adventure = new AdventureSettingsPacket();
-        $adventure->targetActorUniqueId = $this->id;
         $pk = AddPlayerPacket::create(
             $this->uuid,
             $this->getVehicleName() . "-" . $this->id,
-            $this->id,
             $this->id,
             "",
             $this->getPosition(),
@@ -299,7 +296,7 @@ class VehicleBase extends Entity
             ItemStackWrapper::legacy(itemStack::null()),
             0,
             $this->getNetworkProperties()->getAll(),
-            $adventure,
+            UpdateAbilitiesPacket::create(0, 0, $this->id, []),
             [],
             "",
             DeviceOS::UNKNOWN
