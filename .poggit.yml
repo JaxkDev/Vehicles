@@ -1,8 +1,0 @@
----
-build-by-default: true
-branches:
-- master
-projects:
-  Vehicles:
-    path: ""
-...
