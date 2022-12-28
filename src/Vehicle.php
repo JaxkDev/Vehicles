@@ -106,7 +106,6 @@ class Vehicle extends VehicleBase
                 $this->getDriver()->move($finalMotionX, $this->motion->y, $finalMotionZ);
                 $this->getDriver()->updateMovement();
                 foreach ($this->getPassengers() as $passenger){
-                    $passenger->move($finalMotionX, $this->motion->y, $finalMotionZ);
                     if ($passenger instanceof Player){
                         $passenger->setRotation($yaw, $pitch);
                         $passenger->move($finalMotionX, $this->motion->y, $finalMotionZ);
