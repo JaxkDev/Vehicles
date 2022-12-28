@@ -246,16 +246,16 @@ class VehicleBase extends Entity
 		return $this->design;
 	}
 
-	/**
-	 * @return array<string, float|null>
-	 */
+    /**
+     * @return array
+     */
 	public function getVehicleSpeed(): array{
 		return $this->speed;
 	}
 
-	/**
-	 * @return array<string, null|Vector3|array<Vector3>>
-	 */
+    /**
+     * @return array
+     */
 	public function getVehicleSeats(): array{
 		return $this->seats;
 	}

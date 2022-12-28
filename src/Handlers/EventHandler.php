@@ -127,6 +127,9 @@ class EventHandler implements Listener
         $packet = $event->getPacket();
         $player = $event->getOrigin();
 
+        if (!$packet instanceof PlayerAuthInputPacket) return;
+        if ($player->getPlayer() == null || !$player->getPlayer()->isOnline()) return;
+
         if (isset(Main::$inVehicle[$player->getPlayer()->getUniqueId()->toString()])) {
             $event->cancel();
             if ($packet->getMoveVecX() == 0 && $packet->getMoveVecZ() == 0) {
@@ -147,6 +150,7 @@ class EventHandler implements Listener
 		/** @var InteractPacket $packet */
 		$packet = $event->getPacket();
 
+        if (!$packet instanceof InteractPacket) return;
 		if($packet->action === InteractPacket::ACTION_LEAVE_VEHICLE){
 			$player = $event->getOrigin()->getPlayer();
 			$vehicle = $player->getWorld()->getEntity($packet->targetActorRuntimeId);
@@ -165,6 +169,7 @@ class EventHandler implements Listener
 		/** @var InventoryTransactionPacket $packet */
 		$packet = $event->getPacket();
 
+        if (!$packet instanceof InventoryTransactionPacket) return;
 		if($packet->trData instanceof UseItemOnEntityTransactionData){
 			$player = $event->getOrigin()->getPlayer();
 			$vehicle = $player->getWorld()->getEntity($packet->trData->getActorRuntimeId());
