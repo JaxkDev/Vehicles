@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace JaxkDev\Vehicles;
 
 use pocketmine\entity\EntitySizeInfo;
+use pocketmine\network\mcpe\protocol\types\AbilitiesData;
 use pocketmine\network\mcpe\protocol\types\DeviceOS;
 use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
@@ -298,7 +299,7 @@ class VehicleBase extends Entity
             0,
             $this->getNetworkProperties()->getAll(),
             new PropertySyncData([], []),
-            UpdateAbilitiesPacket::create(0, 0, $this->id, []),
+            UpdateAbilitiesPacket::create(new AbilitiesData(0, 0, $this->id, [])),
             [],
             "",
             DeviceOS::UNKNOWN
