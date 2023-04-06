@@ -1,0 +1,42 @@
+name: "Release"
+on:
+  push:
+    branches: [ "PM4" ]
+
+jobs:
+  release:
+    name: "Create release"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP 8.0
+        uses: shivammathur/setup-php@2.12.0
+        with:
+          php-version: 8.0
+          extensions: yaml gd2
+
+      - name: Composer
+        run: |
+          composer update --no-interaction --ignore-platform-reqs
+          composer install --no-suggest --no-interaction --ignore-platform-reqs
+      - name: "Get data"
+        id: metadata
+        run: |
+          echo ::set-output name=VERSION::$(php -r 'echo explode("+", explode("-", yaml_parse_file(getcwd() . DIRECTORY_SEPARATOR . "plugin.yml")["version"])[0])[0];')
+          echo ::set-output name=FULL_VERSION::$(php -r 'echo yaml_parse_file(getcwd() . DIRECTORY_SEPARATOR .                                "plugin.yml")["version"];')
+          echo ::set-output name=NAME::$(php -r 'echo yaml_parse_file(getcwd() . DIRECTORY_SEPARATOR .                                                 "plugin.yml")["name"];')
+      - name: "Build phar"
+        run: "php -dphar.readonly=0 build.php"
+
+      - name: "Create Release"
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ steps.metadata.outputs.VERSION }}"
+          prerelease: false
+          title: "Release v${{ steps.metadata.outputs.VERSION }}"
+          files: |
+            out/*.phar
