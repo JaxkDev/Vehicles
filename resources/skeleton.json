@@ -1,0 +1,29 @@
+{
+  "name": "",
+  "design": "",
+  "type": 0,
+  "version": 1,
+
+  "scale": 1.0,
+
+  "baseOffset": 1.0,
+
+  "seatPositions": {
+    "driver": [0, 0, 0],
+    "passengers": [[0, 0, 0]]
+  },
+
+  "BBox": [0,0,0,1,1,1],
+
+  "gravity": 1.0,
+
+  "speedMultiplier": {
+    "forward": 1,
+    "backward": 1
+  },
+
+  "directionMultiplier": {
+    "left": 1,
+    "right": 1
+  }
+}

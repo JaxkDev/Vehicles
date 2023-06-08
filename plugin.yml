@@ -1,0 +1,36 @@
+name: Vehicles
+author: JaxkDev
+version: 1.0.0
+api: 5.0.0
+src-namespace-prefix: JaxkDev\Vehicles
+main: JaxkDev\Vehicles\Main
+website: "https://github.com/JaxkDev/Vehicles"
+description: "PocketMine-MP plugin that brings vehicles to your server !"
+
+commands:
+  vehicles:
+    description: "Vehicles general command"
+    permission: vehicles.command.use
+    usage: /vehicles help
+    permission-message: "[Vehicles] > You do not have permission to use vehicle commands."
+
+permissions:
+  vehicles.command.use:
+    description: "Allows user to use vehicle commands."
+    default: true
+  vehicles.command.lock:
+    description: "Allows user to lock their vehicle."
+    default: true
+  vehicles.command.spawn:
+    description: "Allows user to spawn a vehicle."
+    default: op
+  vehicles.command.remove:
+    description: "Allows user to remove a vehicle."
+    default: op
+
+  vehicles.drive:
+    description: "Allows user to drive their vehicle."
+    default: true
+  vehicles.passenger:
+    description: "Allows user to be a passenger."
+    default: true
